@@ -1,0 +1,11 @@
+2/8/26
+
+Maggie and Ellington created GLM_test R script for tidying diet data for glm-application
+
+To-do:
+- Investigate Ruby's discussion of glvm?
+- Apply USGS analysis
+
+?
+
+Maggie created Exploratory Data Analysis (EDA) R script for granular data visualization of every DietData variable and NMDS of env.
