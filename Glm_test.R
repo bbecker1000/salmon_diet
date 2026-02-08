@@ -36,7 +36,7 @@ SCxPTModel <- glm(cbind(Percentage, 1 - Percentage) ~ SpeciesCode * PreyTaxa,
 
 summary(SCxPTModel)
 
-Model <- glm(cbind(Percentage, 1 - Percentage) ~ SpeciesCode * PreyTaxa * HabitatType * PercentCover * ForkLength * FultonConditionFactor,
-                  DietDataCombLonger,
-                  family = binomial)
+# Model <- glm(cbind(Percentage, 1 - Percentage) ~ SpeciesCode * PreyTaxa * HabitatType * PercentCover * ForkLength * FultonConditionFactor,
+                  #DietDataCombLonger,
+                  #family = binomial)
 summary(Model)
