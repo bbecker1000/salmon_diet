@@ -44,3 +44,12 @@ ggplot(AverageDiet, aes(x= SpeciesCode, y=MeanPercentage, fill= PreyTaxa))+
        x = "Salmonid Species",
        y = "Percentage") +
   theme_minimal() 
+
+##Test for significance of difference 
+library(ecodist)
+library(vegan)
+
+BrayCurtisMatrix <- vegdist(DietData, method= "bray")
+PermanovaResult <- adonis2(BrayCurtisMatrix ~ SpeciesCode +LifeStage + ForkLength + HabitatType +FishWeight +FultonConditionFactor,  data= DietData_env, by= "margin")
+print(PermanovaResult)
+summary(PermanovaResult)
