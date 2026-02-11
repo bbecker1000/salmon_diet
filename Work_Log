@@ -1,3 +1,18 @@
+2/11/26
+
+To-do:
+- Separate life stages for SH
+- Take out unknown diet items from data
+
+Maggie plotted percentage diet composition across species
+
+Maggie and Ellington tested PERMANOVA on Bray-Curtis matrix, found similar outcomes to NMDS Adonis
+
+Maggie and Ellington tested Morisita-Horn Index and found CH-CO have 0.98 diet similiarity, 
+but CH-SH and CO-SH have 0.60 and 0.64 similiarty respectively
+^ Likely due to both lifestage and unknown prey items
+
+
 2/8/26
 
 Maggie and Ellington created GLM_test R script for tidying diet data for glm-application
