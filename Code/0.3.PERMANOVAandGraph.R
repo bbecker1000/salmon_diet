@@ -37,7 +37,6 @@ AverageDiet <- DietDataCombLonger %>%
             .groups = "drop")
 
 ##Graphing diet compotion per species ** SH should be split into two life stages, how to deal with so much unknown? 
-library(ggplot2)
 ggplot(AverageDiet, aes(x= SpeciesCode, y=MeanPercentage, fill= PreyTaxa))+
   geom_bar(stat = "identity")+
   labs(title = "",
@@ -56,6 +55,20 @@ ggplot(AverageDiet2, aes(x= SpeciesCode, y=MeanPercentage, fill= PreyTaxa))+
   geom_bar(stat = "identity")+
   labs(title = "",
        x = "Salmonid Species",
+       y = "Percentage") +
+  theme_minimal() 
+
+# More specific graph, filtered specifically by species code == Steelhead Trout
+SH_Avg <- DietDataCombLonger %>%
+  filter(SpeciesCode == "SH") %>%
+  group_by(LifeStage, PreyTaxa) %>%
+  summarise(MeanPercentage = mean(Percentage, na.rm = TRUE),
+            .groups = "drop")
+
+ggplot(SH_Avg, aes(x= LifeStage, y=MeanPercentage, fill= PreyTaxa))+
+  geom_bar(stat = "identity")+
+  labs(title = "",
+       x = "Age",
        y = "Percentage") +
   theme_minimal() 
 
