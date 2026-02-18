@@ -45,11 +45,40 @@ ggplot(AverageDiet, aes(x= SpeciesCode, y=MeanPercentage, fill= PreyTaxa))+
        y = "Percentage") +
   theme_minimal() 
 
+#Calculate average diet composition by species 
+AverageDiet2 <- DietDataCombLonger %>%
+  filter(LifeStage == "YoY") %>%
+  group_by(SpeciesCode, PreyTaxa) %>%
+  summarise(MeanPercentage = mean(Percentage, na.rm = TRUE),
+            .groups = "drop")
+
+ggplot(AverageDiet2, aes(x= SpeciesCode, y=MeanPercentage, fill= PreyTaxa))+
+  geom_bar(stat = "identity")+
+  labs(title = "",
+       x = "Salmonid Species",
+       y = "Percentage") +
+  theme_minimal() 
+
 ##Test for significance of difference 
 library(ecodist)
 library(vegan)
 
 BrayCurtisMatrix <- vegdist(DietData, method= "bray")
-PermanovaResult <- adonis2(BrayCurtisMatrix ~ SpeciesCode +LifeStage + ForkLength + HabitatType +FishWeight +FultonConditionFactor,  data= DietData_env, by= "margin")
+PermanovaResult <- adonis2(BrayCurtisMatrix ~ SpeciesCode +LifeStage + ForkLength + HabitatType +FishWeight +FultonConditionFactor,  
+                           data= DietData_env, 
+                           by= "margin")
 print(PermanovaResult)
 summary(PermanovaResult)
+
+# Test against only lifestage among steelhead trout
+
+SH_DietData.env <- DietDataComb %>% 
+  filter(SpeciesCode == "SH")
+
+SH_Diet <- SH_DietData.env[,27:63]
+
+BrayCurtisMatrix2 <- vegdist(SH_Diet, method= "bray")
+
+PermanovaResult2 <- adonis2(BrayCurtisMatrix2 ~ LifeStage,  
+                           data= SH_DietData.env, 
+                           by= "margin")
