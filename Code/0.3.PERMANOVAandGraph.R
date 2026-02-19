@@ -44,6 +44,8 @@ ggplot(AverageDiet, aes(x= SpeciesCode, y=MeanPercentage, fill= PreyTaxa))+
        y = "Percentage") +
   theme_minimal() 
 
+ggsave("Figures/Species_Diet_Averages.png")
+
 #Calculate average diet composition by species 
 AverageDiet2 <- DietDataCombLonger %>%
   filter(LifeStage == "YoY") %>%
@@ -58,6 +60,8 @@ ggplot(AverageDiet2, aes(x= SpeciesCode, y=MeanPercentage, fill= PreyTaxa))+
        y = "Percentage") +
   theme_minimal() 
 
+ggsave("Figures/YoY_Species_Diet_Averages.png")
+
 # More specific graph, filtered specifically by species code == Steelhead Trout
 SH_Avg <- DietDataCombLonger %>%
   filter(SpeciesCode == "SH") %>%
@@ -71,6 +75,35 @@ ggplot(SH_Avg, aes(x= LifeStage, y=MeanPercentage, fill= PreyTaxa))+
        x = "Age",
        y = "Percentage") +
   theme_minimal() 
+
+ggsave("Figures/Steelhead_LifeStage_Diet_Comparison.png")
+
+# Remove unknown, junk, and low count (<10) prey taxa
+
+filtDietData <-  filtered_DietDataWhole[,27:43]
+
+# Find total n count of prey items per observation (row) and create percentage data frame
+filtTotalCountList <- rowSums(filtDietData)
+
+filtDietDataPercent <- filtDietData/filtTotalCountList
+
+filtDietDataComb <- cbind(DietData_env %>% filter(LifeStage == "YoY"), filtDietDataPercent)
+
+filtDietDataCombLonger <- pivot_longer(filtDietDataComb, cols = 27:43, names_to = "PreyTaxa", values_to = "Percentage")
+
+filtAverageDiet <- filtDietDataCombLonger %>%
+  group_by(SpeciesCode, PreyTaxa) %>%
+  summarise(MeanPercentage = mean(Percentage, na.rm = TRUE),
+            .groups = "drop")
+
+ggplot(filtAverageDiet, aes(x= SpeciesCode, y=MeanPercentage, fill= PreyTaxa))+
+  geom_bar(stat = "identity")+
+  labs(title = "",
+       x = "Salmonid Species",
+       y = "Percentage") +
+  theme_minimal() 
+
+ggsave("Figures/Filtered_Species_Diet_Averages.png")
 
 ##Test for significance of difference 
 library(ecodist)
