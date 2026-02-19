@@ -1,0 +1,42 @@
+2/18/26
+To-do:
+- Apply frequency occurence analysis (convert all counts to 1/0)
+- Literature review on specific habitat (river) characteristics and at
+sampling points
+- Investigate Levin's B Index for dietary niche width?
+
+Ellington applied separate life stage plots and PERMANOVA analysis for SH
+
+Ellington removed unknown diet items from data (following Ruby's selection 
+criteria) and applied manyglm framework to identify significant differences
+and estimators
+
+Ellington partitioned prey taxa into aquatic and terrestrial types for spatial
+analysis
+
+2/11/26
+
+To-do:
+- Separate life stages for SH (DONE)
+- Take out unknown diet items from data (DONE)
+
+Maggie plotted percentage diet composition across species
+
+Maggie and Ellington tested PERMANOVA on Bray-Curtis matrix, found similar outcomes to NMDS Adonis
+
+Maggie and Ellington tested Morisita-Horn Index and found CH-CO have 0.98 diet similiarity, 
+but CH-SH and CO-SH have 0.60 and 0.64 similiarty respectively
+^ Likely due to both lifestage and unknown prey items
+
+
+2/8/26
+
+Maggie and Ellington created GLM_test R script for tidying diet data for glm-application
+
+To-do:
+- Investigate Ruby's discussion of glvm?
+- Apply USGS analysis
+
+?
+
+Maggie created Exploratory Data Analysis (EDA) R script for granular data visualization of every DietData variable and NMDS of env.
