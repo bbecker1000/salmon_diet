@@ -1,8 +1,21 @@
+2/18/26
+To-do:
+- Apply frequency occurence analysis (convert all counts to 1/0)
+
+Ellington applied separate life stage plots and PERMANOVA analysis for SH
+
+Ellington removed unknown diet items from data (following Ruby's selection 
+criteria) and applied manyglm framework to identify significant differences
+and estimators
+
+Ellington partitioned prey taxa into aquatic and terrestrial types for spatial
+analysis
+
 2/11/26
 
 To-do:
-- Separate life stages for SH
-- Take out unknown diet items from data
+- Separate life stages for SH (DONE)
+- Take out unknown diet items from data (DONE)
 
 Maggie plotted percentage diet composition across species
 
