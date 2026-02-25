@@ -1,3 +1,12 @@
+2/25/26 
+Maggie reviewed and expanded on Elligton's Work:
+- Ran same chi squared analysis but with only 2020 data  
+      - No chinook data from 2020 so no statement on chinook preference can be made 
+      - CO individual test p= 0.57, insignifiant 
+      - SH individual test p= 0.0004998, significant 
+- Community data also lacks gastropoda data so can't use for invasive snail question.. (did snails invade in the last 6 years?)
+- Where was each invert community sample taken on the creek? 
+
 2/25/26
 Ellington processed Redwood BMI data and ran chi-sq analyses on community composition data compared to species diets
 - Results: Significance across species diets compared to community composition
@@ -5,7 +14,10 @@ Ellington processed Redwood BMI data and ran chi-sq analyses on community compos
     A) Community data was from 2020 whereas species data is from 2022
     B) Community data lacks terrestrial prey, which make up a significant chunk of species diet data
     C) There compared data only consisted of the 7 orders shared across both datasets
-
+    
+2/20/2026
+Maggie loaded Darren Data and proofed old Ruby code 
+- How to deal with GIS data in here/ at all? I'm inexerienced in that.. didn't load those files 
 
 2/18/26
 To-do:
