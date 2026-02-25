@@ -1,3 +1,12 @@
+2/25/26
+Ellington processed Redwood BMI data and ran chi-sq analyses on community composition data compared to species diets
+- Results: Significance across species diets compared to community composition
+- Issues: 
+    A) Community data was from 2020 whereas species data is from 2022
+    B) Community data lacks terrestrial prey, which make up a significant chunk of species diet data
+    C) There compared data only consisted of the 7 orders shared across both datasets
+
+
 2/18/26
 To-do:
 - Apply frequency occurence analysis (convert all counts to 1/0)
