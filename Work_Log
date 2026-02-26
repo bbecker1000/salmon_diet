@@ -1,12 +1,3 @@
-2/25/26 
-Maggie reviewed and expanded on Elligton's Work:
-- Ran same chi squared analysis but with only 2020 data  
-      - No chinook data from 2020 so no statement on chinook preference can be made 
-      - CO individual test p= 0.57, insignifiant 
-      - SH individual test p= 0.0004998, significant 
-- Community data also lacks gastropoda data so can't use for invasive snail question.. (did snails invade in the last 6 years?)
-- Where was each invert community sample taken on the creek? 
-
 2/25/26
 Ellington processed Redwood BMI data and ran chi-sq analyses on community composition data compared to species diets
 - Results: Significance across species diets compared to community composition
@@ -14,7 +5,28 @@ Ellington processed Redwood BMI data and ran chi-sq analyses on community compos
     A) Community data was from 2020 whereas species data is from 2022
     B) Community data lacks terrestrial prey, which make up a significant chunk of species diet data
     C) There compared data only consisted of the 7 orders shared across both datasets
-    
+Maggie ran Elligton's chi-sq analysis but with only 2020 data 
+Results: 
+      - CO individual test p= 0.57, insignifiant 
+      - SH individual test p= 0.0004998, significant 
+More Issues/ Commments/ Questions: 
+      A) No chinook data from 2020 so no statement on chinook preference can be made.. we might have to throw this question out tbh 
+      B) Community data also lacks gastropoda data so can't use for invasive snail question.. (did snails invade in the last 6 years?)
+      C) Where was each invert community sample taken on the creek? 
+Maggie ran a series of GLMs for each species occurance with abiotic factors 
+Results: 
+  - SH dramtically associated with plunge pools and riffles (bigger?)
+  - CO dramtically disassociated with plunge pools, riffles, poolcomplexity=1, and LWD. 
+  - CH dramatically disassociated with plunge pools and riffles
+Maggie ran PERMANOVA on abotic factors signficance on diet composition 
+Results: 
+  - Species is still biggest sig and r2 
+  - Habitat type, pool surface area, percent cover, and small wood debris presence also signficant. still 0.817 residual though. 
+Further Questions: 
+  - are wood debris types more associated with areas of the creek on a local scale? 
+  - difference in wood debris types associated with differential foraging strategies? 
+  - Need to break down SH into ages .. if no different :could CH disporportionately effect CO given SH exploits different areas of the stream, and CO already not doing well comparatively? 
+
 2/20/2026
 Maggie loaded Darren Data and proofed old Ruby code 
 - How to deal with GIS data in here/ at all? I'm inexerienced in that.. didn't load those files 
