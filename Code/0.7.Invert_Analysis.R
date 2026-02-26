@@ -40,7 +40,7 @@ ggplot(Redwood_BMI_2020_Longer, aes(x = Sample_ID, y = Percentage, fill = Class_
 
 ggsave("Figures/Redwood_BMI_Averages.png")
 
-### Create df averaged across samples
+### Create df averaged across samples (not location-specific)
 
 Taxatotals <- data.frame(Totalcounts = rowSums(Redwood_BMI_2020[,3:11]))
 Filtered_Redwood_BMI <- Redwood_BMI_2020 %>%
@@ -48,3 +48,7 @@ Filtered_Redwood_BMI <- Redwood_BMI_2020 %>%
   cbind(Taxatotals) %>%
   filter(Order %in% c("Subclass: Acari", "Amphipoda", "Ephemeroptera", "Plecoptera", "Trichoptera", "Coleoptera", "Diptera"))
 Filtered_Redwood_BMI$Order[Filtered_Redwood_BMI$Order == "Subclass: Acari"] <- "Acari"
+
+### Location-specific analysis
+
+Redwood_BMI_2020.env <- read_excel("Data/RW_2019-21_StrmInvertData.xlsx", sheet = 3)
