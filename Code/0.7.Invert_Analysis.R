@@ -66,6 +66,35 @@ for (BMI_df in df_list){
   BMI_comb[is.na(BMI_comb)] <- 0
 }
 
+write.csv(BMI_comb, "Temporary_Data_Frames/Combined_BMI.csv")
+
+### Proportion comparison over by sample over time
+
+BMI_summary_samples <- BMI_comb %>%
+  mutate(Total = rowSums(across(3:17))) %>%
+  pivot_longer(cols = 3:17, names_to = "Taxa", values_to = "Count") %>%
+  mutate(Percentage = Count / Total)
+
+ggplot(BMI_summary, aes(x = Year, y = Percentage, fill = Taxa)) +
+  geom_bar(stat = "identity") +
+  facet_wrap(~Sample)
+
+ggsave("Figures/RW_BMI_by_Sample_Over_Time.png")
+
+BMI_summary_year <- BMI_comb %>%
+  pivot_longer(cols = 3:17, names_to = "Taxa", values_to = "Count") %>%
+  group_by(Year, Taxa) %>%
+  summarize(Count = sum(Count)) %>%
+  pivot_wider(names_from = Taxa, values_from = Count) %>%
+  mutate(Total = rowSums(across(Acari:Veneroida))) %>%
+  pivot_longer(cols = 2:16, names_to = "Taxa", values_to = "Count") %>%
+  mutate(Percentage = Count / Total)
+
+ggplot(BMI_summary_year, aes(x = Year, y = Percentage, fill = Taxa)) +
+  geom_bar(stat = "identity")
+
+ggsave("Figures/RW_BMI_Over_Time.png")
+
 ### NMDS for BMI to see if there are significant changes in invert community across years
 
 BMI_comb_filtered <- BMI_comb %>%
