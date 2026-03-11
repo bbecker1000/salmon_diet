@@ -1,6 +1,7 @@
 library(readxl)
 library(tidyverse)
 library(ggplot2)
+library(vegan)
 
 ### Download and clean up 2019 - 2021 BMI data
 # Note: all surveys take place in July
@@ -65,8 +66,33 @@ for (BMI_df in df_list){
   BMI_comb[is.na(BMI_comb)] <- 0
 }
 
+### NMDS for BMI to see if there are significant changes in invert community across years
 
+BMI_comb_filtered <- BMI_comb %>%
+  select(-Odonata, -Turbellaria, -Amphipoda, -Hydroida, -Veneroida, -Basommatophora, -Megaloptera) #remove < 10 total observation taxa
 
+set.seed(123)
+BMI_matrix <- as.matrix(BMI_comb_filtered[,3:10])
+BMI_nmds <- metaMDS(BMI_matrix, distance= "bray", k=2, try=20)
+stressplot(BMI_nmds)
+BMI_nmds_point <- as_tibble(BMI_nmds$points)
+BMI_nmds_full <- cbind(BMI_comb_filtered[,1:2], BMI_nmds_point)
+invert_points <- BMI_nmds$species %>% as.data.frame() %>%
+  rownames_to_column(var = 'inverts')
+#makes the plot 
+ggplot()+
+  geom_jitter(data = BMI_nmds_full, 
+              aes(x = MDS1, y = MDS2, color = Year, fill = Year),
+              size = 3, width = 0.3, height = 0.3)+
+  stat_ellipse(data = BMI_nmds_full, 
+               aes(x = MDS1, y = MDS2, color = Year, fill = Year),
+               geom= "polygon",
+               level= 0.8, alpha= 0.3)+
+  geom_text_repel(data= invert_points, aes(x= MDS1, y= MDS2, label = inverts), 
+                  color ="black", 
+                  family= "Helvetica")+
+  labs(title = "")+
+  theme_bw()
 
 # Replace bad column names
 Col_Names <- c("Class","Order","S1","S2","S3","S4","S5","S6","S7","S8","S9")
