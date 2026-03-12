@@ -7,11 +7,11 @@ DietData_env <- read_excel("Data/DietData_env.xlsx")
 # Combine environmental with diet datasets by sampleID
 CombindedDietData <- cbind(DietData_env, DietData)
 
-##Glm for each species association with abiotic factors 
+##Glm for each species association with abiotic factors ->>> going in a different direction from these glms 
 
 CombindedDietData$CO <- ifelse(CombindedDietData$SpeciesCode == "CO", 1, 0)
 glm(CO ~ HabitatType + PoolComplexity +
-      RootWad + PercentCover + SWDJam + LWDJam,
+      RootWad + PercentCover + SWDJam + LWDJam+(1|)
     data = CombindedDietData,
     family = binomial)
 
@@ -27,7 +27,7 @@ glm(CH ~ HabitatType + PoolComplexity +
     data = CombindedDietData,
     family = binomial)
 
-#PERMANOVA for aboitic factors == speciescode, habitiat type, pool surface area, percent cover, and small wood debris sig
+#PERMANOVA for aboitic factors == species code, habitat type, pool surface area, percent cover, and small wood debris sig
 library(ecodist)
 library(vegan)
 
