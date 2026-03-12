@@ -5,7 +5,7 @@ library(tidyverse)
 # Pull Filtered_Redwood_BMI from 0.7
 # Pull filtered_DietDataWhole from 0.2
 
-#now makes df from only 2020 salmon diet data 
+#make df 
 Invert_Comp_df <- filtered_DietDataWhole %>% 
   select(SpeciesCode, Acari, Amphipoda, Ephemeroptera, Plecoptera, Trichoptera, Coleoptera, Diptera) %>%
   pivot_longer(cols = 2:8, names_to = "Order", values_to = "Counts") %>%

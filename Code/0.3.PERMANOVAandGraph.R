@@ -12,7 +12,6 @@ DietData_env <- read_excel("Data/DietData_env.xlsx")
 
 # Find total n count of prey items per observation (row) and create percentage data frame
 TotalCountList <- rowSums(DietData)
-
 DietDataPercent <- DietData/TotalCountList
 
 # Remodel DietData and join with DietData_env
