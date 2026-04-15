@@ -1,8 +1,16 @@
+4/15/26 
+Maggie worked on setting up rarefaction curves for prey accumulation breifly 
+- do we want to break this up by salmonid species/ location ? probablyy. will doooo 
+- going to try more computationally intense iNEXT maybe but want to read more about it 
+
 3/10/26
 Joining full BMI 2019-2021 for only samples 7-9.
 !Issue, how to resolve order vs class level taxonomic comparison?!
   - i.e. comparing insects at class level to all the others, acari at subclass level
   - From looking at the John Lee notes, it does seem that total relative abundances across samples 7 - 9 increases during reconstruction
+  
+2/26/26
+Work on glms and permanova to explore niche partitiong quetsion 
 
 2/25/26
 Ellington processed Redwood BMI data and ran chi-sq analyses on community composition data compared to species diets
