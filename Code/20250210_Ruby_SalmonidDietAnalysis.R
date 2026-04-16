@@ -24,14 +24,14 @@ library(dplyr)
 #Load in data
 #setwd("C:/Users/rsainzarmendariz/OneDrive - DOI/Documents/SalmonidDietAnalysis")
 setwd("M:/Divisions/Natural Resources/Wildlife/Fish/Salmon/Redwood/Salmonid_diet/Data/RData")
-FishData22 <- read_xlsx("RW_2022_FishData.xlsx") #2022 data (current 2022 Lavage Access db)
-FishData20 <- read_xlsx("RW_2020_FishData.xlsx") #2020 data (current 2020 Lavage Access db)
-GutContents22 <- read_xlsx("2022_GutContents.xlsx") #2022 data (current 2022 Lavage Access db, I added Order_terr_aqua column to excel file and adjusted "unk_plant" name)
-GutContents20 <- read_xlsx("2020_GutContents_terr_aqua_corrected.xlsx") #2020 data (current 2020 Lavage Access db, I added Order_terr_aqua column to excel file and adjusted "unk_plant" name)
-HabitatData <- read_xlsx("R.Sainz_Redwood and Fern Habitat Data_2020&2022_poolcomplexity.xlsx") #2020 and 2022
-CanopyCover22 <- read_xlsx("Redwood_CanopyCover_DietSites_2022.xlsx") #There is only canopy cover data for 2022 (Redwood_CanopyCover_DietSites_2022)
-LocationDataRWD <- read_xlsx("Redwood and Fern Habitat and Location Data_2020&2022.xlsx") #location/section number data (Redwood sheet)
-LocationDataFern <- read_xlsx("Redwood and Fern Habitat and Location Data_2020&2022.xlsx", sheet = 2) #Fern sheet
+FishData22 <- read_xlsx("Data/RW_2022_FishData.xlsx") #2022 data (current 2022 Lavage Access db)
+FishData20 <- read_xlsx("Data/RW_2020_FishData.xlsx") #2020 data (current 2020 Lavage Access db)
+GutContents22 <- read_xlsx("Data/2022_GutContents.xlsx") #2022 data (current 2022 Lavage Access db, I added Order_terr_aqua column to excel file and adjusted "unk_plant" name)
+GutContents20 <- read_xlsx("Data/2020_GutContents_terr_aqua_corrected.xlsx") #2020 data (current 2020 Lavage Access db, I added Order_terr_aqua column to excel file and adjusted "unk_plant" name)
+HabitatData <- read_xlsx("Data/R.Sainz_Redwood and Fern Habitat Data_2020&2022_poolcomplexity.xlsx") #2020 and 2022
+CanopyCover22 <- read_xlsx("Data/Redwood_CanopyCover_DietSites_2022.xlsx") #There is only canopy cover data for 2022 (Redwood_CanopyCover_DietSites_2022)
+LocationDataRWD <- read_xlsx("Data/Redwood and Fern Habitat and Location Data_2020&2022.xlsx") #location/section number data (Redwood sheet)
+LocationDataFern <- read_xlsx("Data/Redwood and Fern Habitat and Location Data_2020&2022.xlsx", sheet = 2) #Fern sheet
 
 
 ###   Data Transformation ###
