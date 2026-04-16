@@ -3,6 +3,11 @@ library(readxl)
 library(dplyr)
 library(iNEXT)
 
+DietData <- read_excel("Data/DietData.xlsx")
+DietData_env <- read_excel("Data/DietData_env.xlsx")
+
+DietDataWhole <- cbind(DietData_env,DietData)
+
 ## Need environmental information x abundance matrix -> pull DietDataWhole from 0.2.manyglm_test 
 View(DietDataWhole)
 
@@ -111,7 +116,20 @@ View(DietHabitatChar)
     #plot iNEXT: rarefaction, extrapolation, confidence intervals 
     plot(COspeciesgroup, type=3)
 
+### Sanity Check
 
+SpeciesCode <- unique(DietDataWhole$SpeciesCode)    
 
-
-
+sanitycheck <- data.frame(Species = as.character(),
+                          Number_Taxa = as.numeric())
+for (species in SpeciesCode){
+  SpeciesDiet <- DietDataWhole %>%
+    select(SpeciesCode, 27:63) %>%
+    filter(SpeciesCode == species) %>%
+    pivot_longer(cols = 2:38, names_to = "Taxa", values_to = "Count") %>%
+    filter(Count != 0)
+  taxanum <- length(unique(SpeciesDiet$Taxa))
+  tempframe <- data.frame(Species = species,
+             Number_Taxa = taxanum)
+  sanitycheck <- rbind(sanitycheck, tempframe)
+}
