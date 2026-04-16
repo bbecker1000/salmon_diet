@@ -70,7 +70,7 @@ datadispersion <- DietData %>%
 # ZIP performs the best by AIC... ZINB is only appropriate if overdispersion is caused by anything other than excess zeros
 # This reasoning follow given the visual count histograms
 ggplot(DietData %>% 
-         pivot_longer(cols = 1:37, names_to = "Taxa", values_to = "Count"), 
+         pivot_longer(cols = 1:17, names_to = "Taxa", values_to = "Count"), 
        aes(x = Count)) + 
   geom_histogram(binwidth = 1) + 
   facet_wrap(~Taxa)
@@ -142,9 +142,9 @@ ordiplot(M3, biplot = TRUE, ind.spp = 37, xlim = c(-3, 3), ylim = c(-3, 3),
          main = "Biplot", symbols = TRUE, pch = pchSC, s.colors = ColorsFW)
 
 M4 <- gllvm(DietData, DietData_traits, family = "ZIP", num.lv = 2,
-            formula = ~ SpeciesCode * FishWeight + LifeStage + 0, seed = 1234)
-coefplot(M4, cex.ylab = 0.7, mar = c(4, 9, 2, 1), mfrow=c(2,3), order = TRUE, 
-         xlim.list = list(c(-15,100),c(-15,100),c(-15,100), c(-40,10),c(-10,10)))
+            formula = ~ SpeciesCode + FultonConditionFactor + LifeStage, seed = 1234)
+coefplot(M4, cex.ylab = 0.7, mar = c(4, 9, 2, 1), mfrow=c(2,3), order = FALSE, 
+         xlim.list = list(c(-15,15),c(-15,15),c(-15,15), c(-20,20),c(-10,10)))
 par(mfrow = c(1,1))
 ordiplot(M4, biplot = TRUE, ind.spp = 37, xlim = c(-3, 3), ylim = c(-3, 3), 
          main = "Biplot", symbols = TRUE, pch = pchSC, s.colors = ColorsFW)
