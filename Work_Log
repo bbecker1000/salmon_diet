@@ -1,5 +1,10 @@
 4/15/26 
 Maggie worked on  rarefaction curves for prey accumulation 
+Ellington worked on gllvm
+  - Model identification: Zero-inflate poisson is best
+    - Justification: Overdispersion & visual zero inflation (histogram)
+  - Model iterations: Identifying best # of LV
+  - Model coefficients: Testing SpeciesCode, FishWeight, YoY, Habitat...
 
 3/10/26
 Joining full BMI 2019-2021 for only samples 7-9.
