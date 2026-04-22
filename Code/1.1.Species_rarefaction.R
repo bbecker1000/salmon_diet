@@ -45,6 +45,7 @@ DietHabitatChar <- DietDataWhole %>%
 View(DietHabitatChar)
 
 ## Separate by species and habitat character
+
   #CH localities ==== not sig dif in diversity 
     CHHabChar <- subset(DietHabitatChar, SpeciesCode == "CH")
     ## ## Prep to create curves for habitat character within CH samples 
