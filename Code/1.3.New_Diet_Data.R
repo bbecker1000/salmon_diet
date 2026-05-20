@@ -111,3 +111,6 @@ DietTaxa_Traits <- GutContents_Comb %>%
   group_by(Taxa_Habitat, Terrestrial_or_Aquatic) %>%
   drop_na(Length_mm) %>%
   summarize(Avg_Length_mm = mean(as.numeric(Length_mm)))
+
+DietTaxa_Traits <- DietTaxa_Traits %>%
+  column_to_rownames(var = "Taxa_Habitat")
