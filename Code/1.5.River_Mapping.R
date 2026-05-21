@@ -91,7 +91,7 @@ ggsave("Figures/Fish_River_Habitat.png", width = 10, height = 10, units = "in")
 ### Snorkel survey v. gut lavage samples 
 #grab juvenile survey from 1.4 and HabitatData_clean
 #2020
-Juvenile_survey_2020 <- Juvenile_survey %>% filter(FieldSeason== 2020) 
+Juvenile_survey_2020_FCF <- Juvenile_survey %>% filter(FieldSeason== 2020) 
 #graph 
   ggplot(data= Juvenile_survey_2020, aes(x= Longitude, y= Latitude, color = SpeciesCode, size = NumberOfFish))+
   geom_jitter(width = 0.001, height = 0.001, alpha=0.5) +
