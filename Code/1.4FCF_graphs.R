@@ -85,8 +85,8 @@ ggplot(Juvenile_survey_FCF, aes(x=factor(FieldSeason), y=FCF, fill = SpeciesCode
 #2020
 Juvenile_survey %>%
   filter(FieldSeason== 2020) %>%
-  ggplot(aes(x= Longitude, y= Latitude, color = SpeciesCode, alpha = NumberOfFish))+
-  geom_jitter(size = 3, width = 0.01, height = 0.01) +
+  ggplot(aes(x= Longitude, y= Latitude, color = SpeciesCode, size = NumberOfFish))+
+  geom_jitter(width = 0.001, height = 0.001, alpha=0.5) +
   scale_alpha_continuous(range = c(0.4, 1.0)) +
   scale_color_manual(values = c(
     "SH" = "darkcyan",
@@ -102,7 +102,7 @@ Juvenile_survey %>%
 Juvenile_survey %>%
   filter(FieldSeason== 2022) %>%
   ggplot(aes(x= Longitude, y= Latitude, color = SpeciesCode, alpha = NumberOfFish))+
-  geom_jitter(size = 3, width = 0.01, height = 0.01) +
+  geom_jitter(size = 1, width = 0.001, height = 0.001) +
   scale_alpha_continuous(range = c(0.3, 1.0)) +
   scale_color_manual(values = c(
     "SH" = "darkcyan",
@@ -121,7 +121,7 @@ Juvenile_survey_FCF %>%
   filter(FieldSeason== 2020) %>%
   drop_na(FCF, NumberOfFish, Longitude, Latitude)%>%
   ggplot(aes(x= Longitude, y= Latitude, color= FCF))+
-  geom_jitter(size = 3, width = 0.01, height = 0.01, alpha= 0.7) +
+  geom_jitter(size = 1, width = 0.001, height = 0.001, alpha= 0.7) +
   scale_alpha_continuous(range = c(0.1, 1.0)) +
   scale_color_gradient(low = "cornsilk", high= "deeppink4")+
   theme_minimal()+
@@ -135,7 +135,7 @@ Juvenile_survey_FCF %>%
   filter(FieldSeason== 2022) %>%
   drop_na(FCF, NumberOfFish, Longitude, Latitude)%>%
   ggplot(aes(x= Longitude, y= Latitude, color= FCF))+
-  geom_jitter(size = 3, width = 0.01, height = 0.01, alpha= 0.4) +
+  geom_jitter(size = 1, width = 0.001, height = 0.001, alpha= 0.4) +
   scale_alpha_continuous(range = c(0.1, 1.0)) +
   scale_color_gradient(low = "cornsilk", high= "deeppink4")+
   theme_minimal()+
@@ -143,8 +143,6 @@ Juvenile_survey_FCF %>%
        x = "Longitude", 
        y = "Latitude", 
        color = "FCF")
-
-
 
 
 
