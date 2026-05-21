@@ -73,11 +73,14 @@ FishData_Comb <- rbind(FishData20_Clean, FishData22_Clean)
 # LocationDataFern <- read_xlsx("Data/Redwood and Fern Habitat and Location Data_2020&2022.xlsx", sheet = 2) #Fern sheet
 
 HabitatData <- read_xlsx("Data/R.Sainz_Redwood and Fern Habitat Data_2020&2022_poolcomplexity.xlsx") #2020 and 2022
+LocationData <- read_xlsx("Data/Redwood and Fern Habitat and Location Data_2020&2022.xlsx")
+LocationData$FieldSeason <- as.character(LocationData$FieldSeason)
 
 HabitatData_Clean <- HabitatData %>%
-  select(FieldSeason, StreamName, BasinWideUnit, Latitude, Longitude, HabitatType, 
+  select(FieldSeason, StreamName, BasinWideUnit, Latitude, Longitude, HabitatType,
          Length_m, EstWidth_m, EstSurfaceArea_msq, MaxDepth_m, CrestDepth_m, ResidualPoolDepth_m) %>%
-  rename(Creek = StreamName)
+  rename(Creek = StreamName) %>%
+  left_join(LocationData %>% select(FieldSeason, BasinWideUnit, SectionNum), by = c("FieldSeason", "BasinWideUnit"))
 
 ### Merge environmental df
 DietData_env <- FishData_Comb %>%
