@@ -195,7 +195,7 @@ ggplot(AverageDiet_2020, aes(x= SpeciesCode, y=MeanPercentage, fill= PreyTaxa))+
 #graph 2022 
 ggplot(AverageDiet_2022, aes(x= SpeciesCode, y=MeanPercentage, fill= PreyTaxa))+
   geom_bar(stat = "identity")+
-  labs(title = "Percent Diet Composisions 2022",
+  labs(title = "Percent Diet Compositions 2022",
        x = "Salmonid Species",
        y = "Percentage") +
   theme_minimal() 
