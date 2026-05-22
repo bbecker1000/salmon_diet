@@ -7,6 +7,8 @@ View(DietData)
 DietData_env <- read_excel("Data/DietData_env.xlsx")
 View(DietData_env)
 
+#---------------------------------------------------------------------------------------
+
 #EDA 
 #Species X Body characteristics Box plots 
 library(ggplot2)
@@ -100,9 +102,10 @@ ggplot(data= glayer1, aes(x= LifeStage, y= HabitatType, fill = HabitatType)) +
   theme_minimal()
 #life stage x habitat type for CO 
 
+#______________________________________________________________________________________________________
 
 #Species diet comparisons.. getting tricky 
-#LETS GOOOO NMDS ** not quite there... is it that there is not enough defintition between diets? 
+#LETS GOOOO NMDS ** not quite there... is it that there is not enough definition between diets? 
 library(vegan)
 library(readxl)
 library(tidyverse)
@@ -133,3 +136,66 @@ p.NMS_plot <- ggplot()+
   labs(title = "")+
   theme_bw()
 p.NMS_plot
+
+#------------------------------------------------------------------------------------------
+# Diet Compositions between years and species 
+
+# Download data
+DietData <- read_excel("Data/DietData.xlsx")
+DietData_env <- read_excel("Data/DietData_env.xlsx")
+
+#filter out unwanted stomach materials 
+DietData_filtered <- DietData %>%
+  select(Decapoda, Ephemeroptera, Diptera, Plecoptera, Psocodea, Hymenoptera, Trichoptera, Araneae, Coleoptera, 
+         Gastropoda_snail, Isopoda, Megaloptera, Littorinimorpha, Hemiptera , Lepidoptera, Odonata, Oligochaeta, Bivalvia)
+
+# Find total n count of prey items per observation (row) and create percentage data frame
+TotalCountList <- rowSums(DietData_filtered)
+DietDataPercent <- DietData_filtered/TotalCountList
+
+# Remodel DietData and join with DietData_env
+SampleID <- DietData_env$SampleID 
+DietDataPercent <- cbind(DietDataPercent, SampleID)
+
+DietData_env$SampleID <- as.character(DietData_env$SampleID) # Convert all sampleIDs from numeric to character data type
+DietData_env$SampleID[103] <- "148.10" # Fix truncated sampleID (from 148.1 to 148.10)
+
+# Combine environmental with diet datasets by sampleID
+DietDataComb <- DietData_env %>%
+  left_join(DietDataPercent, by = "SampleID")
+
+# Convert dataframe into longer with individual rows for each prey observation per sampleID
+DietDataCombLonger <- pivot_longer(DietDataComb, cols = 27:44, names_to = "PreyTaxa", values_to = "Percentage")
+
+#make separate data set for each year 
+#2020 
+DietDataCombLonger_2020 <- DietDataCombLonger %>% filter(FieldSeason== 2020)
+#2022 
+DietDataCombLonger_2022 <- DietDataCombLonger %>% filter(FieldSeason== 2022)
+
+#Caluculate average diet composition by species for each year 
+#2020
+AverageDiet_2020 <- DietDataCombLonger_2020 %>%
+  group_by(SpeciesCode, PreyTaxa) %>%
+  summarise(MeanPercentage = mean(Percentage, na.rm = TRUE),
+            .groups = "drop")
+#2022
+AverageDiet_2022 <- DietDataCombLonger_2022 %>%
+  group_by(SpeciesCode, PreyTaxa) %>%
+  summarise(MeanPercentage = mean(Percentage, na.rm = TRUE),
+            .groups = "drop")
+
+#graph 2020 
+ggplot(AverageDiet_2020, aes(x= SpeciesCode, y=MeanPercentage, fill= PreyTaxa))+
+  geom_bar(stat = "identity")+
+  labs(title = "Percent Diet Compositions 2020",
+       x = "Salmonid Species",
+       y = "Percentage") +
+  theme_minimal() 
+#graph 2022 
+ggplot(AverageDiet_2022, aes(x= SpeciesCode, y=MeanPercentage, fill= PreyTaxa))+
+  geom_bar(stat = "identity")+
+  labs(title = "Percent Diet Composisions 2022",
+       x = "Salmonid Species",
+       y = "Percentage") +
+  theme_minimal() 
