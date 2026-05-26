@@ -152,3 +152,42 @@ view(cbind(summarize_HabChar %>%
         select(Taxa, Prop) %>% 
         arrange(desc(Prop)) %>% 
         rename(PacificWay = Prop)))
+
+### Snorkel survey v. gut lavage samples 
+#grab juvenile survey from 1.4 and HabitatData_clean
+#2020
+Juvenile_survey_2020_FCF <- Juvenile_survey %>% filter(FieldSeason== 2020) 
+#graph 
+ggplot(data= Juvenile_survey_2020, aes(x= Longitude, y= Latitude, color = SpeciesCode, size = NumberOfFish))+
+  geom_jitter(width = 0.001, height = 0.001, alpha=0.5) +
+  scale_alpha_continuous(range = c(0.4, 1.0)) +
+  scale_color_manual(values = c(
+    "SH" = "darkcyan",
+    "CO" = "goldenrod"
+  ))+
+  geom_point(data= HabitatData_Clean, aes(x= Longitude, y= Latitude), 
+             alpha= 0.5,  size= 2, shape= 23, color= "black")+
+  theme_minimal()+
+  labs(title = "Juvenile Fish Survey 2020", 
+       x = "Longitude", 
+       y = "Latitude", 
+       color = "Species")
+
+#2022
+Juvenile_survey %>%
+  filter(FieldSeason== 2022) %>%
+  ggplot(aes(x= Longitude, y= Latitude, color = SpeciesCode, alpha = NumberOfFish))+
+  geom_jitter(size = 1, width = 0.001, height = 0.001) +
+  scale_alpha_continuous(range = c(0.3, 1.0)) +
+  scale_color_manual(values = c(
+    "SH" = "darkcyan",
+    "CO" = "goldenrod",
+    "CH" = "mediumvioletred"
+  ))+
+  geom_point(data= HabitatData_Clean, aes(x= Longitude, y= Latitude), 
+             alpha= 0.5,  size= 2, shape= 23, color= "black")+
+  theme_minimal()+
+  labs(title = "Juvenile Fish Survey 2022", 
+       x = "Longitude", 
+       y = "Latitude", 
+       color = "Species")
