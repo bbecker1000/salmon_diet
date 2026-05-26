@@ -87,3 +87,68 @@ DietHabitatChar_2 %>%
 ggsave("Figures/Fish_River_Habitat.png", width = 10, height = 10, units = "in")
 
 ### Diet by habitat
+
+DietDataComb_HabChar <- DietDataComb %>%
+  mutate(HabChar = case_when(
+    SectionNum >= 0 & SectionNum <= 3.9 ~ "PacificWay",
+    SectionNum >= 4 & SectionNum <= 17.9 ~ "Highway1", 
+    SectionNum >= 18 & SectionNum <= 28.9 ~ "FrankValley",
+    SectionNum >= 29 & SectionNum <= 49.9 ~ "KentCreekTrail",
+    SectionNum >= 50 & SectionNum <= 68.9  ~ "Dipsea",
+    SectionNum >= 69 & SectionNum <= 74 ~ "Foot4",
+  )) %>%
+  select(HabChar, everything())
+
+filtered_DietDataComb_HabChar <- DietDataComb_HabChar %>%
+  filter(Creek != "Fern Creek", LifeStage == "YoY", FieldSeason == "2022")
+
+filtered_DietDataComb_HabChar[,21:37] <- filtered_DietDataComb_HabChar[,21:37]/rowSums(filtered_DietDataComb_HabChar[,21:37])
+
+filtered_DietDataComb_HabChar %>%
+  group_by(HabChar) %>%
+  summarize(Freq = n()) %>%
+  ggplot(aes(x = HabChar, y = Freq)) +
+  geom_col()
+
+summarize_HabChar <- filtered_DietDataComb_HabChar %>%
+  select(HabChar, 21:37) %>%
+  pivot_longer(cols = 2:18, names_to = "Taxa", values_to = "Prop") %>%
+  filter(Prop != "NaN") %>%
+  group_by(HabChar,Taxa) %>%
+  summarize(Prop = mean(Prop))
+
+ggplot(summarize_HabChar, aes(x = "", y = Prop, fill = Taxa)) +
+  geom_bar(stat = "Identity") +
+  coord_polar("y", start = 0) + 
+  facet_wrap(~HabChar)
+
+view(cbind(summarize_HabChar %>% 
+        filter(HabChar == "Dipsea") %>% 
+        ungroup() %>%
+        select(Taxa, Prop) %>% 
+        arrange(desc(Prop)) %>% 
+        rename(Dipsea = Prop),
+      summarize_HabChar %>% 
+        filter(HabChar == "FrankValley") %>% 
+        ungroup() %>%
+        select(Taxa, Prop) %>% 
+        arrange(desc(Prop)) %>% 
+        rename(FrankValley = Prop),
+      summarize_HabChar %>% 
+        filter(HabChar == "Highway1") %>% 
+        ungroup() %>%
+        select(Taxa, Prop) %>% 
+        arrange(desc(Prop)) %>% 
+        rename(DipHighway1sea = Prop),
+      summarize_HabChar %>% 
+        filter(HabChar == "KentCreekTrail") %>% 
+        ungroup() %>%
+        select(Taxa, Prop) %>% 
+        arrange(desc(Prop)) %>% 
+        rename(KentCreekTrail = Prop),
+      summarize_HabChar %>% 
+        filter(HabChar == "PacificWay") %>% 
+        ungroup() %>%
+        select(Taxa, Prop) %>% 
+        arrange(desc(Prop)) %>% 
+        rename(PacificWay = Prop)))
