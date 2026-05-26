@@ -39,6 +39,13 @@ DietData_ta <- GutContents_Comb %>%
 
 DietData_ta[is.na(DietData_ta)] <- 0 # replace NAs with 0s
 
+DietData <- GutContents_Comb %>%
+  group_by(Sample_ID, Order) %>%
+  summarize(Count = n()) %>%
+  pivot_wider(names_from = Order, values_from = Count)
+
+DietData[is.na(DietData)] <- 0 # replace NAs with 0s
+
 ### Grab fish data
 
 FishData22 <- read_xlsx("Data/RW_2022_FishData.xlsx") #2022 data (current 2022 Lavage Access db)
@@ -92,6 +99,11 @@ DietDataComb_ta <- DietData_env %>% # Choose to join w/ dietdata_env so that onl
 
 DietDataComb_ta[,19:79][is.na(DietDataComb_ta[,19:79])] <- 0
 
+DietDataComb <- DietData_env %>% # Choose to join w/ dietdata_env so that only sampleIDs from diets are lost if no matching
+  left_join(DietData, by = "Sample_ID")
+
+DietDataComb[,19:56][is.na(DietDataComb[,19:56])] <- 0
+
 ### Clean out 
 lowcounttaxa_ta <- (GutContents_Comb %>%
   group_by(Taxa_Habitat) %>%
@@ -103,6 +115,13 @@ nonfoodtaxa_ta <- c("unk_invert_unknown", "Unknown_unknown", "unk_invert_terrest
 
 DietDataComb_ta <- DietDataComb_ta %>%
   select(-all_of(lowcounttaxa_ta), -all_of(nonfoodtaxa_ta))
+
+nonfoodtaxa <- c("unk_invert", "Unknown", "unk_invert", "detritus_total", 
+                    "trash", "unk_plant_material", "unk_plant_material", 
+                    "sand_gravel_total", "unk_invert", "seed", "unknown_fish")
+
+DietDataComb <- DietDataComb %>%
+  select(-all_of(lowcounttaxa), -all_of(nonfoodtaxa))
 
 ### Create taxa trait dataframe
 
