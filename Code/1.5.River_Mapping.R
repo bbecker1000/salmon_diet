@@ -108,6 +108,80 @@ ggplot(data= Juvenile_survey_2020, aes(x= Longitude, y= Latitude, color = Specie
        y = "Latitude", 
        color = "Species")
 
+filtered_DietDataComb_HabChar <- DietDataComb_HabChar %>%
+  filter(Creek != "Fern Creek", LifeStage == "YoY", FieldSeason == "2022")
+
+filtered_DietDataComb_HabChar[,21:37] <- filtered_DietDataComb_HabChar[,21:37]/rowSums(filtered_DietDataComb_HabChar[,21:37])
+
+filtered_DietDataComb_HabChar %>%
+  group_by(HabChar) %>%
+  summarize(Freq = n()) %>%
+  ggplot(aes(x = HabChar, y = Freq)) +
+  geom_col()
+
+summarize_HabChar <- filtered_DietDataComb_HabChar %>%
+  select(HabChar, 21:37) %>%
+  pivot_longer(cols = 2:18, names_to = "Taxa", values_to = "Prop") %>%
+  filter(Prop != "NaN") %>%
+  group_by(HabChar,Taxa) %>%
+  summarize(Prop = mean(Prop))
+
+ggplot(summarize_HabChar, aes(x = "", y = Prop, fill = Taxa)) +
+  geom_bar(stat = "Identity") +
+  coord_polar("y", start = 0) + 
+  facet_wrap(~HabChar)
+
+view(cbind(summarize_HabChar %>% 
+        filter(HabChar == "Dipsea") %>% 
+        ungroup() %>%
+        select(Taxa, Prop) %>% 
+        arrange(desc(Prop)) %>% 
+        rename(Dipsea = Prop),
+      summarize_HabChar %>% 
+        filter(HabChar == "FrankValley") %>% 
+        ungroup() %>%
+        select(Taxa, Prop) %>% 
+        arrange(desc(Prop)) %>% 
+        rename(FrankValley = Prop),
+      summarize_HabChar %>% 
+        filter(HabChar == "Highway1") %>% 
+        ungroup() %>%
+        select(Taxa, Prop) %>% 
+        arrange(desc(Prop)) %>% 
+        rename(DipHighway1sea = Prop),
+      summarize_HabChar %>% 
+        filter(HabChar == "KentCreekTrail") %>% 
+        ungroup() %>%
+        select(Taxa, Prop) %>% 
+        arrange(desc(Prop)) %>% 
+        rename(KentCreekTrail = Prop),
+      summarize_HabChar %>% 
+        filter(HabChar == "PacificWay") %>% 
+        ungroup() %>%
+        select(Taxa, Prop) %>% 
+        arrange(desc(Prop)) %>% 
+        rename(PacificWay = Prop)))
+
+### Snorkel survey v. gut lavage samples 
+#grab juvenile survey from 1.4 and HabitatData_clean
+#2020
+Juvenile_survey_2020_FCF <- Juvenile_survey %>% filter(FieldSeason== 2020) 
+#graph 
+ggplot(data= Juvenile_survey_2020, aes(x= Longitude, y= Latitude, color = SpeciesCode, size = NumberOfFish))+
+  geom_jitter(width = 0.001, height = 0.001, alpha=0.5) +
+  scale_alpha_continuous(range = c(0.4, 1.0)) +
+  scale_color_manual(values = c(
+    "SH" = "darkcyan",
+    "CO" = "goldenrod"
+  ))+
+  geom_point(data= HabitatData_Clean, aes(x= Longitude, y= Latitude), 
+             alpha= 0.5,  size= 2, shape= 23, color= "black")+
+  theme_minimal()+
+  labs(title = "Juvenile Fish Survey 2020", 
+       x = "Longitude", 
+       y = "Latitude", 
+       color = "Species")
+
 #2022
 Juvenile_survey %>%
   filter(FieldSeason== 2022) %>%
