@@ -1,4 +1,6 @@
 # creating the diet data, environmental data, and trait data for gllvm
+# selected relevant variables, reshaped diet data from food item by row to entire salmon gut lavage by row
+# Note: included empty stomachs in diet data set and removed diet items without a matching salmon ID... may choose to exclude empty stomachs in future analyses
 
 # Libraries ---------------------------------------------------------------
 
@@ -84,6 +86,9 @@ environmental_data <- habitat_data %>%
 
 # create diet data frame with low count and trash taxa removed, including empty stomachs
 diet_data_original <- fish_data_combined %>%
+  mutate(LifeStage = case_match(LifeStage,
+                                "YOY" ~ "YoY",
+                                .default = LifeStage)) %>%
   left_join(environmental_data, by = c("FieldSeason", "Creek", "BasinWideUnit")) %>%
   left_join(gut_contents_combined %>%
               group_by(Sample_ID, Order) %>%
@@ -97,10 +102,13 @@ diet_data_original <- fish_data_combined %>%
   # filter fern creek as most samples come from redwood creek
   # filter all samples from "Foot 4" river reach due to low samples and which were only in 2020
   filter(Creek != "Fern Creek", 
-         SectionNum >= 69)
+         SectionNum <= 69)
 
 # create diet data frame for terrestrial/aquatic categorizations with low count and trash taxa removed, including empty stomachs
 diet_data_terrestrial_or_aquatic <- fish_data_combined %>%
+  mutate(LifeStage = case_match(LifeStage,
+                                "YOY" ~ "YoY",
+                                .default = LifeStage)) %>%
   left_join(environmental_data, by = c("FieldSeason", "Creek", "BasinWideUnit")) %>%
   left_join(gut_contents_combined %>%
               group_by(Sample_ID, Taxa_Habitat) %>%
@@ -114,7 +122,7 @@ diet_data_terrestrial_or_aquatic <- fish_data_combined %>%
   # filter fern creek as most samples come from redwood creek
   # filter all samples from "Foot 4" river reach due to low samples and which were only in 2020
   filter(Creek != "Fern Creek", 
-         SectionNum >= 69)
+         SectionNum <= 69)
 
 ### create taxa trait data frame
 
