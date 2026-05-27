@@ -93,7 +93,11 @@ diet_data_original <- fish_data_combined %>%
               mutate(across(everything(), ~ coalesce(., 0))) %>%
               select(-all_of(low_count_taxa_original), -all_of(non_food_taxa_original)),
             by = "Sample_ID") %>%
-  mutate(across(all_of(20:36), ~ coalesce(.,0)))
+  mutate(across(all_of(20:36), ~ coalesce(.,0))) %>%
+  # filter fern creek as most samples come from redwood creek
+  # filter all samples from "Foot 4" river reach due to low samples and which were only in 2020
+  filter(Creek != "Fern Creek", 
+         SectionNum >= 69)
 
 # create diet data frame for terrestrial/aquatic categorizations with low count and trash taxa removed, including empty stomachs
 diet_data_terrestrial_or_aquatic <- fish_data_combined %>%
@@ -106,7 +110,11 @@ diet_data_terrestrial_or_aquatic <- fish_data_combined %>%
               mutate(across(everything(), ~ coalesce(., 0))) %>%
               select(-all_of(low_count_taxa_terrestrial_or_aquatic), -all_of(non_food_taxa_terrestrial_or_aquatic)),
             by = "Sample_ID") %>%
-  mutate(across(all_of(20:46), ~ coalesce(.,0)))
+  mutate(across(all_of(20:46), ~ coalesce(.,0))) %>%
+  # filter fern creek as most samples come from redwood creek
+  # filter all samples from "Foot 4" river reach due to low samples and which were only in 2020
+  filter(Creek != "Fern Creek", 
+         SectionNum >= 69)
 
 ### create taxa trait data frame
 
