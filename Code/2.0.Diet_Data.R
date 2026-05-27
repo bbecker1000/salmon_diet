@@ -129,6 +129,6 @@ diet_taxa_terrestrial_or_aquatic_traits <- gut_contents_combined %>%
 # Export data -------------------------------------------------------------
 
 write.csv(diet_data_original, "Data/Created_Data/Diet_Data_Original.csv", row.names = FALSE)
-write.csv(diet_data_terrestrial_or_aquatic, "Data/Created_Data/Diet_Data_Terrestrial_Or_Aquatic", row.names = FALSE)
-write.csv(diet_taxa_original_traits, "Data/Created_Data/Diet_Taxa_Original_Traits", row.names = FALSE)
-write.csv(diet_taxa_terrestrial_or_aquatic_traits, "Data/Created_Data/Diet_Taxa_Terrestrial_Or_Aquatic_Traits", row.names = FALSE)
+write.csv(diet_data_terrestrial_or_aquatic, "Data/Created_Data/Diet_Data_Terrestrial_Or_Aquatic.csv", row.names = FALSE)
+write.csv(diet_taxa_original_traits, "Data/Created_Data/Diet_Taxa_Original_Traits.csv", row.names = FALSE)
+write.csv(diet_taxa_terrestrial_or_aquatic_traits, "Data/Created_Data/Diet_Taxa_Terrestrial_Or_Aquatic_Traits.csv", row.names = FALSE)
