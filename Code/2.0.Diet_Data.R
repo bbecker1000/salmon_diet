@@ -1,3 +1,4 @@
+# last updated: 05/27/26
 # creating the diet data, environmental data, and trait data for gllvm
 # selected relevant variables, reshaped diet data from food item by row to entire salmon gut lavage by row
 # Note: included empty stomachs in diet data set and removed diet items without a matching salmon ID... may choose to exclude empty stomachs in future analyses
