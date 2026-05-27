@@ -1,5 +1,7 @@
 library(paletteer)
 
+####### HABITAT by RIVER ##########
+
 ### Habitat to river reach comparison
 
 HabitatChar <- HabitatData_Clean %>%
@@ -57,6 +59,8 @@ ggplot(HabitatChar_Coverage, aes(x = "", y = prop, fill = HabitatType)) +
   facet_wrap(~HabChar + FieldSeason) +
   coord_polar("y", start = 0)
 ggsave("Figures/River_Area_Pie.png", width = 10, height = 10, units = "in")
+
+############ DIET by RIVER #################
 
 # Coverage by dietdata
 
@@ -142,12 +146,58 @@ view(cbind(summarize_HabChar %>%
         arrange(desc(Prop)) %>% 
         rename(PacificWay = Prop)))
 
+################# SPECIES by RIVER ###################
+
+### Survey distribution by reach 
+
+Juvenile_Survey_HabChar <- Juvenile_survey %>%
+  filter(!LocationCode %in% c("RW-11-0","RW-07-7","RW-07-1","RW-07-4"))
+Juvenile_Survey_HabChar$LocationCode <- sub("RW-01-", "", Juvenile_Survey_HabChar$LocationCode)
+Juvenile_Survey_HabChar$LocationCode <- as.numeric(Juvenile_Survey_HabChar$LocationCode)
+Juvenile_Survey_HabChar <- Juvenile_Survey_HabChar %>%
+  mutate(HabChar = case_when(
+    LocationCode >= 0 & LocationCode <= 3.9 ~ "PacificWay",
+    LocationCode >= 4 & LocationCode <= 17.9 ~ "Highway1", 
+    LocationCode >= 18 & LocationCode <= 28.9 ~ "FrankValley",
+    LocationCode >= 29 & LocationCode <= 49.9 ~ "KentCreekTrail",
+    LocationCode >= 50 & LocationCode <= 68.9  ~ "Dipsea",
+    LocationCode >= 69 & LocationCode <= 74 ~ "Foot4",
+  ))
+
+Juvenile_Survey_HabChar %>%
+  group_by(HabChar, SpeciesCode, FieldSeason) %>%
+  summarize(Count = sum(NumberOfFish)) %>%
+  left_join(Juvenile_Survey_HabChar %>%
+              group_by(HabChar, FieldSeason) %>%
+              summarize(Total = sum(NumberOfFish)),
+            by = c("HabChar","FieldSeason")) %>%
+  mutate(Prop = Count/Total) %>%
+  ggplot(aes(x = "", y = Prop, fill = SpeciesCode)) +
+    geom_col(width = 1) +
+    facet_wrap(~HabChar + FieldSeason) +
+  coord_polar("y", start = 0)
+ggsave("Figures/Species_Survey_by_River.png", width = 6, height = 3.5, units = "in")
+
+### Gut Lavage Sampling by River
+
+DietHabitatChar_2 %>%
+  filter(Creek != "Fern Creek", LifeStage %in% c("YoY", "YOY")) %>%
+  count(HabChar, SpeciesCode, FieldSeason) %>%
+  group_by(HabChar, FieldSeason) %>%
+  mutate(prop = n / sum(n)) %>%
+  ggplot(aes(x = "", y = prop, fill = SpeciesCode)) +
+  geom_col(width = 1) +
+  facet_wrap(~HabChar + FieldSeason) +
+  coord_polar("y", start = 0)
+ggsave("Figures/Species_DietData_by_River.png", width = 6, height = 3.5, units = "in")
+
+
 ### Snorkel survey v. gut lavage samples 
 #grab juvenile survey from 1.4 and HabitatData_clean
 #2020
 Juvenile_survey_2020_FCF <- Juvenile_survey %>% filter(FieldSeason== 2020) 
 #graph 
-ggplot(data= Juvenile_survey_2020, aes(x= Longitude, y= Latitude, color = SpeciesCode, size = NumberOfFish))+
+ggplot(data= Juvenile_survey_2020_FCF, aes(x= Longitude, y= Latitude, color = SpeciesCode, size = NumberOfFish))+
   geom_jitter(width = 0.001, height = 0.001, alpha=0.5) +
   scale_alpha_continuous(range = c(0.4, 1.0)) +
   scale_color_manual(values = c(
