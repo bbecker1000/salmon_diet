@@ -1,0 +1,17 @@
+Sections (Ctrl + Shift + r)
+
+### subsection headers
+# line comments
+
+Section 1: Libraries
+library()
+Section 2: Calling files
+df_data <- read_csv/read_xlsx("path")
+.....
+Section ?: Export data
+write.csv(df,"path")
+
+Syntax rules
+- all data, value names are lowercase, with "_" separating words
+- all new variable names are uppercase for the first letter of each word with no spacing between words
+- line comments should be written in the line above the code it is for
