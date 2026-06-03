@@ -57,7 +57,8 @@ fish_measurement <- measurement_survey_data %>%
   select(SpeciesCode, LifeStage, NumberOfFish,
          ID, EventID, LocationID, StartDate, FieldSeason, Latitude, Longitude, StreamNumber,
          Watershed, StreamName,
-         ForkLength_mm, FishWeight_g)
+         ForkLength_mm, FishWeight_g) %>%
+  mutate(FultonConditionFactor = (FishWeight_g /(ForkLength_mm^3))*100000)
 
 # Export ------------------------------------------------------------------
 
