@@ -71,7 +71,8 @@ fish_data_combined <- rbind(
            Creek = StreamID) %>%
     mutate(Creek = recode(Creek,
                           "34" = "Redwood Creek Mainstem",
-                          "37" = "Fern Creek")))
+                          "37" = "Fern Creek"))) %>%
+  filter(SpeciesCode != "SCU")
 
 ### environmental data
 
