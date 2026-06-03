@@ -1,0 +1,9 @@
+diet_data_original = Combined dataset of diet, fish morphometrics, and habitat characteristics
+diet_taxa_original_traits = Morphometrics for diet taxa
+
+diet_data_terrestrial_or_aquatic = Combined dataset of diet, fish morphometrics, and habitat characteristics separated by terrestrial/aquatic
+diet_taxa_terrestrial_or_aquatic_traits = Morphometrics and terrestrial/aquatic for diet taxa
+
+fish_snorkel = Snorkel survey dataset
+
+fish_measurement = Seining + Efish survey dataset
