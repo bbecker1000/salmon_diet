@@ -90,6 +90,39 @@ ggplot(diet_data_original %>%
        aes(x = LifeStage, y = Count, fill = HabitatType)) + 
   geom_col(position = "dodge", width = 0.7)
 
+### diet comparisons
+
+# diet taxa proportions by species and season
+
+diet_data_original %>%
+  filter(LifeStage == "YoY") %>%
+  select(SpeciesCode, FieldSeason, 20:36) %>%
+  pivot_longer(cols = 3:19, names_to = "Taxa", values_to = "Count") %>%
+  group_by(SpeciesCode, Taxa, FieldSeason) %>%
+  summarize(Count = sum(Count)) %>%
+  ungroup() %>%
+  group_by(SpeciesCode, FieldSeason) %>%
+  mutate(Total = sum(Count),
+         Proportion = Count/Total) %>%
+  ggplot(aes(x = SpeciesCode, y = Proportion, fill = Taxa)) +
+  geom_col() +
+  facet_wrap(~FieldSeason)
+  
+# SH diet taxa proportions by lifestage
+
+diet_data_original %>%
+  filter(SpeciesCode == "SH") %>%
+  select(LifeStage, FieldSeason, 20:36) %>%
+  pivot_longer(cols = 3:19, names_to = "Taxa", values_to = "Count") %>%
+  group_by(LifeStage, Taxa, FieldSeason) %>%
+  summarize(Count = sum(Count)) %>%
+  ungroup() %>%
+  group_by(LifeStage, FieldSeason) %>%
+  mutate(Total = sum(Count),
+         Proportion = Count/Total) %>%
+  ggplot(aes(x = LifeStage, y = Proportion, fill = Taxa)) +
+  geom_col()
+
 # nmds --------------------------------------------------------------------
 
 set.seed(451)
