@@ -59,7 +59,7 @@ fish_measurement <- measurement_survey_data %>%
          Watershed, StreamName,
          ForkLength_mm, FishWeight_g) %>%
   mutate(FultonConditionFactor = (FishWeight_g /(ForkLength_mm^3))*100000) %>%
-  # rename morphometrics to be consistent with diet dataset
+  # rename morphometrics to be consistent with diet data set
   rename(ForkLength = ForkLength_mm,
          FishWeight = FishWeight_g)
 
