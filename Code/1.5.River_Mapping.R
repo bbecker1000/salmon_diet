@@ -54,9 +54,9 @@ HabitatChar_Coverage <- HabitatChar_Coverage %>%
   right_join(HabitatChar_Coverage, by = c("FieldSeason", "HabChar")) %>%
   mutate(prop = Area_Coverage/Total_Coverage)
 
-ggplot(HabitatChar_Coverage, aes(x = "", y = prop, fill = HabitatType)) +
+ggplot(HabitatChar_Coverage %>% filter(FieldSeason == "2022"), aes(x = "", y = prop, fill = HabitatType)) +
   geom_col(width = 1) +
-  facet_wrap(~HabChar + FieldSeason) +
+  facet_wrap(~HabChar) +
   coord_polar("y", start = 0)
 ggsave("Figures/River_Area_Pie.png", width = 10, height = 10, units = "in")
 
@@ -80,14 +80,17 @@ ggplot(DietHabitatChar_2 %>% filter(Creek != "Fern Creek"), aes(x = Longitude, y
 ggsave("Figures/Fish_River_Habitat_Map.png", width = 6, height = 3.5, units = "in")
 
 DietHabitatChar_2 %>%
-  filter(Creek != "Fern Creek") %>%
-  count(HabChar, HabitatType, FieldSeason) %>%
-  group_by(HabChar, FieldSeason) %>%
+  filter(Creek != "Fern Creek",
+         FieldSeason == "2022") %>%
+  count(HabChar, HabitatType) %>%
+  group_by(HabChar) %>%
   mutate(prop = n / sum(n)) %>%
   ggplot(aes(x = "", y = prop, fill = HabitatType)) +
   geom_col(width = 1) +
-  facet_wrap(~HabChar + FieldSeason) +
-  coord_polar("y", start = 0)
+  facet_wrap(~HabChar) +
+  coord_polar("y", start = 0) +
+  scale_fill_manual(values = c("#00BE67","#00BFC4", "#00A9FF", "#C77CFF", "#FF61CC"),
+                     labels = c("Flatwater", "Mid-Channel Pool", "Plunge Pool", "Riffle", "Scour Pool"))
 ggsave("Figures/Fish_River_Habitat.png", width = 10, height = 10, units = "in")
 
 ### Diet by habitat
@@ -114,6 +117,7 @@ ggplot(summarize_HabChar, aes(x = "", y = Prop, fill = Taxa)) +
   geom_bar(stat = "Identity") +
   coord_polar("y", start = 0) + 
   facet_wrap(~HabChar)
+ggsave("Figures/River_Diet_Comparison.png")
 
 view(cbind(summarize_HabChar %>% 
         filter(HabChar == "Dipsea") %>% 
@@ -230,3 +234,12 @@ Juvenile_survey %>%
        x = "Longitude", 
        y = "Latitude", 
        color = "Species")
+
+ggplot() +
+  geom_path(data = HabitatChar %>% filter(Creek != "Fern Creek") %>% arrange(HabChar, SectionNum), 
+            aes(x = Longitude, y = Latitude, group = HabChar, linetype = HabChar),
+            linewidth = 1) +
+  geom_jitter(data = Juvenile_survey %>% filter(StreamName != "Fern Creek"), 
+              aes(x = Longitude, y = Latitude, color = SpeciesCode, size = NumberOfFish, shape = as.factor(FieldSeason)),
+              alpha = 0.5, width = 0.001, height = 0.001)
+ggsave("Figures/Salmon_Survey.png", height = 6, width = 10)
