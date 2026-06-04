@@ -28,4 +28,16 @@ Morisita_Horn_Index(n, CH_Diet_Vector, CO_Diet_Vector)
 Morisita_Horn_Index(n, SH_Diet_Vector, CO_Diet_Vector)
 Morisita_Horn_Index(n, CH_Diet_Vector, SH_Diet_Vector)
 
-AverageDiet 
+CHDiet <- AverageDiet %>%
+  filter(SpeciesCode == "CH") %>%
+  pivot_wider(values_from = MeanPercentage, names_from = SpeciesCode)
+
+CODiet <- AverageDiet %>%
+  filter(SpeciesCode == "CO") %>%
+  pivot_wider(values_from = MeanPercentage, names_from = SpeciesCode)
+
+SHDiet <- AverageDiet %>%
+  filter(SpeciesCode == "SH") %>%
+  pivot_wider(values_from = MeanPercentage, names_from = SpeciesCode)
+
+cbind(CHDiet[order(CHDiet$CH, decreasing = TRUE),],CODiet[order(CODiet$CO, decreasing = TRUE),],SHDiet[order(SHDiet$SH, decreasing = TRUE),])

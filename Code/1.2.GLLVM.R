@@ -157,10 +157,10 @@ par(mfrow = c(1,1))
 ordiplot(M5, biplot = TRUE, ind.spp = 37, xlim = c(-3, 3), ylim = c(-3, 3), 
          main = "Biplot", symbols = TRUE, pch = pchSC, s.colors = ColorsFW)
 
-M6 <- gllvm(DietData, DietData_env, family = "ZIP", num.lv = 2,
+M6 <- gllvm(DietData_ta_0, DietData_env_0, family = "ZIP", num.lv = 2,
             formula = ~ SpeciesCode * FultonConditionFactor + LifeStage + HabitatType + FieldSeason + MaxDepth_m + 0, 
             seed = 1234)
 coefplot(M6, cex.ylab = 0.7, mar = c(4, 9, 2, 1), mfrow=c(2,3), order = TRUE)
 par(mfrow = c(1,1))
-ordiplot(M6, biplot = TRUE, ind.spp = 37, xlim = c(-3, 3), ylim = c(-0.01, 0.01), 
+ordiplot(M6, biplot = TRUE, ind.spp = 37, 
          main = "Biplot", symbols = TRUE, pch = pchSC, s.colors = ColorsFW)
