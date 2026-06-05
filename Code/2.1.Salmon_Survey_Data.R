@@ -37,13 +37,14 @@ fish_snorkel <- snorkel_survey_data %>%
          Watershed, StreamName, HabitatDescriptionSnorkel, 
          Pass, Visibility, TimeElapsed_s) %>%
   # add river reach categorizations by stream number
-  mutate(RiverReach = case_when(
-    StreamNumber >= 0 & StreamNumber <= 3.9 ~ "PacificWay",
-    StreamNumber >= 4 & StreamNumber <= 17.9 ~ "Highway1", 
-    StreamNumber >= 18 & StreamNumber <= 28.9 ~ "FrankValley",
-    StreamNumber >= 29 & StreamNumber <= 49.9 ~ "KentCreekTrail",
-    StreamNumber >= 50 & StreamNumber <= 68.9  ~ "Dipsea",
-    StreamNumber >= 69 & StreamNumber <= 74 ~ "Foot4"))
+  mutate(StreamNumber = as.numeric(StreamNumber),
+         RiverReach = case_when(
+           StreamNumber >= 0 & StreamNumber <= 3.9 ~ "PacificWay",
+           StreamNumber >= 4 & StreamNumber <= 17.9 ~ "Highway1", 
+           StreamNumber >= 18 & StreamNumber <= 28.9 ~ "FrankValley",
+           StreamNumber >= 29 & StreamNumber <= 49.9 ~ "KentCreekTrail",
+           StreamNumber >= 50 & StreamNumber <= 68.9  ~ "Dipsea",
+           StreamNumber >= 69 & StreamNumber <= 74 ~ "Foot4"))
 
 fish_measurement <- measurement_survey_data %>% 
   # pull stream number from location code
@@ -71,7 +72,8 @@ fish_measurement <- measurement_survey_data %>%
   rename(ForkLength = ForkLength_mm,
          FishWeight = FishWeight_g) %>%
   # add river reach categorizations by stream number
-  mutate(RiverReach = case_when(
+  mutate(StreamNumber = as.numeric(StreamNumber),
+    RiverReach = case_when(
     StreamNumber >= 0 & StreamNumber <= 3.9 ~ "PacificWay",
     StreamNumber >= 4 & StreamNumber <= 17.9 ~ "Highway1", 
     StreamNumber >= 18 & StreamNumber <= 28.9 ~ "FrankValley",
