@@ -92,7 +92,7 @@ environmental_data <- habitat_data %>%
     SectionNum >= 29 & SectionNum <= 49.9 ~ "KentCreekTrail",
     SectionNum >= 50 & SectionNum <= 68.9  ~ "Dipsea",
     SectionNum >= 69 & SectionNum <= 74 ~ "Foot4")) %>%
-  rename(SectionNumber = SectionNum)
+  rename(StreamNumber = SectionNum)
 
 ### combine everything
 
@@ -114,7 +114,7 @@ diet_data_original <- fish_data_combined %>%
   # filter fern creek as most samples come from redwood creek
   # filter all samples from "Foot 4" river reach due to low samples and which were only in 2020
   filter(Creek != "Fern Creek", 
-         SectionNumber <= 69)
+         StreamNumber <= 69)
 
 # create diet data frame for terrestrial/aquatic categorizations with low count and trash taxa removed, including empty stomachs
 diet_data_terrestrial_or_aquatic <- fish_data_combined %>%
@@ -134,7 +134,7 @@ diet_data_terrestrial_or_aquatic <- fish_data_combined %>%
   # filter fern creek as most samples come from redwood creek
   # filter all samples from "Foot 4" river reach due to low samples and which were only in 2020
   filter(Creek != "Fern Creek", 
-         SectionNumber <= 69)
+         StreamNumber <= 69)
 
 # create diet data frame with raw counts but nonfood items removed
 diet_data_raw <- fish_data_combined %>%
@@ -154,7 +154,7 @@ diet_data_raw <- fish_data_combined %>%
   # filter fern creek as most samples come from redwood creek
   # filter all samples from "Foot 4" river reach due to low samples and which were only in 2020
   filter(Creek != "Fern Creek", 
-         SectionNumber <= 69)
+         StreamNumber <= 69)
 
 ### create taxa trait data frame
 
