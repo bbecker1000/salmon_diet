@@ -1,10 +1,17 @@
-06/03/26
+06/05/26
 - Transfer check
-  - 0.1 EDA
-  - 0.2 manyglm
-  - 0.3 PERMANOVA
-  - 0.6 Salmon Survey
-  - 1.4 FCF
+  - 0.1 EDA (2.2)
+  - 0.2 manyglm (2.3)
+  - 0.3 PERMANOVA (2.3)
+  - 0.4 Morisita-Horn index (2.3)
+  - 0.5 Spatial Specialization (2.2)
+  - 0.6 Salmon Survey (2.1)
+  - 1.1 Species rarefaction (2.3)
+  - 1.3 New diet data (2.0)
+  - 1.4 FCF (2.4)
+- ignored
+  - 0.9 abiotic glm
+  - 0.10 temporal invert chisq
 
 4/15/26 
 Maggie worked on  rarefaction curves for prey accumulation 
