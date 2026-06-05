@@ -32,7 +32,7 @@ survey_length_weight_plot <- ggplot(fish_measurement %>% filter(LifeStage == "Yo
        aes(x = ForkLength, y = FishWeight, color = SpeciesCode)) +
   geom_point() +
   facet_wrap(~FieldSeason) +
-  stat_smooth(formula = y ~ x^3,
+  stat_smooth(formula = y ~ splines::ns(x, 3),
               method = "glm")
 
 # fish measurement fulton condition factor
@@ -50,7 +50,7 @@ diet_length_weight_plot <- ggplot(diet_data_original %>% filter(LifeStage == "Yo
        aes(x = ForkLength, y = FishWeight, color = SpeciesCode)) +
   geom_point() +
   facet_wrap(~FieldSeason) +
-  stat_smooth(formula = y ~ x^3,
+  stat_smooth(formula = y ~ splines::ns(x, 3),
               method = "glm")
 
 # diet data original fulton condition factor
