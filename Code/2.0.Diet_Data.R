@@ -84,6 +84,7 @@ environmental_data <- habitat_data %>%
   left_join(location_data %>% 
               mutate(FieldSeason = as.character(FieldSeason)) %>%
               select(FieldSeason, BasinWideUnit, SectionNum), by = c("FieldSeason", "BasinWideUnit")) %>%
+  # add river reach categorizations by stream number
   mutate(RiverReach = case_when(
     SectionNum >= 0 & SectionNum <= 3.9 ~ "PacificWay",
     SectionNum >= 4 & SectionNum <= 17.9 ~ "Highway1", 
