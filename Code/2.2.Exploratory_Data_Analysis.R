@@ -14,6 +14,7 @@ library(ggrepel)
 # Calling files -----------------------------------------------------------
 
 diet_data_original <- read.csv("Data/Created_Data/Diet_Data_Original.csv")
+diet_data_terrestrial_or_aquatic <- read.csv("Data/Created_Data/Diet_Data_Terrestrial_Or_Aquatic.csv")
 
 # Raw plotting ----------------------------------------------------------------
 
@@ -96,7 +97,7 @@ ggplot(diet_data_original %>%
 
 diet_data_original %>%
   filter(LifeStage == "YoY") %>%
-  select(SpeciesCode, FieldSeason, 20:36) %>%
+  select(SpeciesCode, FieldSeason, 21:37) %>%
   pivot_longer(cols = 3:19, names_to = "Taxa", values_to = "Count") %>%
   group_by(SpeciesCode, Taxa, FieldSeason) %>%
   summarize(Count = sum(Count)) %>%
@@ -112,7 +113,7 @@ diet_data_original %>%
 
 diet_data_original %>%
   filter(SpeciesCode == "SH") %>%
-  select(LifeStage, FieldSeason, 20:36) %>%
+  select(LifeStage, FieldSeason, 21:37) %>%
   pivot_longer(cols = 3:19, names_to = "Taxa", values_to = "Count") %>%
   group_by(LifeStage, Taxa, FieldSeason) %>%
   summarize(Count = sum(Count)) %>%
@@ -123,15 +124,33 @@ diet_data_original %>%
   ggplot(aes(x = LifeStage, y = Proportion, fill = Taxa)) +
   geom_col()
 
+## aquatic vs. terrestrial comparison
+
+diet_data_terrestrial_or_aquatic %>%
+  filter(LifeStage == "YoY") %>%
+  select(SpeciesCode, 21:47) %>%
+  pivot_longer(cols = 2:28, names_to = "Taxa", values_to = "Count") %>%
+  group_by(SpeciesCode, Taxa) %>%
+  summarize(Count = sum(Count)) %>%
+  left_join(rownames_to_column(diet_taxa_terrestrial_or_aquatic_traits, var = "Taxa") %>% select(Taxa, Terrestrial_or_Aquatic), by = "Taxa") %>%
+  group_by(SpeciesCode) %>%
+  mutate(Total = sum(Count),
+         Proportion = Count/Total) %>%
+  ggplot(aes(x = SpeciesCode, y = Proportion, fill = Terrestrial_or_Aquatic)) +
+  geom_col()
+
 # nmds --------------------------------------------------------------------
 
+diet_data_empty_stomachs_removed <- diet_data_original %>%
+  filter(rowSums(across(21:37), na.rm = TRUE) != 0)
+
 set.seed(451)
-NMDS2 <- metaMDS(as.matrix(diet_data_original[,20:36] %>%
+NMDS2 <- metaMDS(as.matrix(diet_data_empty_stomachs_removed[,21:37] %>%
                              filter(rowSums(.) != 0)), 
                  distance= "bray", k=2, try=20)
 stressplot(NMDS2)
 NMDS_point <- as_tibble(NMDS2$points)
-NMDS_full <- cbind(diet_data_original[,1:19], NMDS_point)
+NMDS_full <- cbind(diet_data_empty_stomachs_removed[,1:20], NMDS_point)
 Prey_points <- NMDS2$species %>% as.data.frame() %>%
   rownames_to_column(var = 'Prey')
 #makes the plot 
