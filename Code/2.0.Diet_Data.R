@@ -1,7 +1,8 @@
-# last updated: 05/27/26
+# last updated: 06/04/26
 # creating the diet data, environmental data, and trait data for gllvm
 # selected relevant variables, reshaped diet data from food item by row to entire salmon gut lavage by row
 # Note: included empty stomachs in diet data set and removed diet items without a matching salmon ID... may choose to exclude empty stomachs in future analyses
+# Note: exclude counts < 10... ask stephanie again if we should do this
 
 # Libraries ---------------------------------------------------------------
 
@@ -42,7 +43,7 @@ low_count_taxa_original <- (gut_contents_combined %>%
                               group_by(Order) %>%
                               summarize(Count = n()) %>%
                               filter(Count < 10))$Order
-non_food_taxa_original <- c("detritus_total", "unk_invert", "Unknown", "sand_gravel_total", "unk_plant_material")
+non_food_taxa_original <- c("detritus_total", "unk_invert", "Unknown", "sand_gravel_total", "unk_plant_material", "trash", "unknown_fish", "seed")
 low_count_taxa_terrestrial_or_aquatic <- (gut_contents_combined %>%
                       group_by(TaxaHabitat) %>%
                       summarize(count = n()) %>%
@@ -82,7 +83,14 @@ environmental_data <- habitat_data %>%
   rename(Creek = StreamName) %>%
   left_join(location_data %>% 
               mutate(FieldSeason = as.character(FieldSeason)) %>%
-              select(FieldSeason, BasinWideUnit, SectionNum), by = c("FieldSeason", "BasinWideUnit"))
+              select(FieldSeason, BasinWideUnit, SectionNum), by = c("FieldSeason", "BasinWideUnit")) %>%
+  mutate(RiverReach = case_when(
+    SectionNum >= 0 & SectionNum <= 3.9 ~ "PacificWay",
+    SectionNum >= 4 & SectionNum <= 17.9 ~ "Highway1", 
+    SectionNum >= 18 & SectionNum <= 28.9 ~ "FrankValley",
+    SectionNum >= 29 & SectionNum <= 49.9 ~ "KentCreekTrail",
+    SectionNum >= 50 & SectionNum <= 68.9  ~ "Dipsea",
+    SectionNum >= 69 & SectionNum <= 74 ~ "Foot4"))
 
 ### combine everything
 
@@ -100,7 +108,7 @@ diet_data_original <- fish_data_combined %>%
               mutate(across(everything(), ~ coalesce(., 0))) %>%
               select(-all_of(low_count_taxa_original), -all_of(non_food_taxa_original)),
             by = "Sample_ID") %>%
-  mutate(across(all_of(20:36), ~ coalesce(.,0))) %>%
+  mutate(across(all_of(21:37), ~ coalesce(.,0))) %>%
   # filter fern creek as most samples come from redwood creek
   # filter all samples from "Foot 4" river reach due to low samples and which were only in 2020
   filter(Creek != "Fern Creek", 
@@ -120,7 +128,27 @@ diet_data_terrestrial_or_aquatic <- fish_data_combined %>%
               mutate(across(everything(), ~ coalesce(., 0))) %>%
               select(-all_of(low_count_taxa_terrestrial_or_aquatic), -all_of(non_food_taxa_terrestrial_or_aquatic)),
             by = "Sample_ID") %>%
-  mutate(across(all_of(20:46), ~ coalesce(.,0))) %>%
+  mutate(across(all_of(21:47), ~ coalesce(.,0))) %>%
+  # filter fern creek as most samples come from redwood creek
+  # filter all samples from "Foot 4" river reach due to low samples and which were only in 2020
+  filter(Creek != "Fern Creek", 
+         SectionNum <= 69)
+
+# create diet data frame with raw counts but nonfood items removed
+diet_data_raw <- fish_data_combined %>%
+  mutate(LifeStage = case_match(LifeStage,
+                                "YOY" ~ "YoY",
+                                .default = LifeStage)) %>%
+  left_join(environmental_data, by = c("FieldSeason", "Creek", "BasinWideUnit")) %>%
+  left_join(gut_contents_combined %>%
+              group_by(Sample_ID, Order) %>%
+              summarize(Count =  n()) %>%
+              pivot_wider(names_from = Order, values_from = Count) %>%
+              # replace NAs with 0s
+              mutate(across(everything(), ~ coalesce(., 0))) %>%
+              select(-all_of(non_food_taxa_original)),
+            by = "Sample_ID") %>%
+  mutate(across(all_of(21:49), ~ coalesce(.,0))) %>%
   # filter fern creek as most samples come from redwood creek
   # filter all samples from "Foot 4" river reach due to low samples and which were only in 2020
   filter(Creek != "Fern Creek", 
@@ -150,3 +178,4 @@ write.csv(diet_data_original, "Data/Created_Data/Diet_Data_Original.csv", row.na
 write.csv(diet_data_terrestrial_or_aquatic, "Data/Created_Data/Diet_Data_Terrestrial_Or_Aquatic.csv", row.names = FALSE)
 write.csv(diet_taxa_original_traits, "Data/Created_Data/Diet_Taxa_Original_Traits.csv", row.names = FALSE)
 write.csv(diet_taxa_terrestrial_or_aquatic_traits, "Data/Created_Data/Diet_Taxa_Terrestrial_Or_Aquatic_Traits.csv", row.names = FALSE)
+write.csv(diet_data_raw, "Data/Created_Data/Diet_Taxa_Raw.csv", row.names = FALSE)
