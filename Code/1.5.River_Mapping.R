@@ -7,7 +7,7 @@ library(paletteer)
 HabitatChar <- HabitatData_Clean %>%
   mutate(HabChar = case_when(
     SectionNum >= 0 & SectionNum <= 3.9 ~ "PacificWay",
-    SectionNum >= 4 & SectionNum <= 17.9 ~ "Highway1", 
+    SectionNum >= 4 & SectionNum <= 17.9 ~ "Highway1",
     SectionNum >= 18 & SectionNum <= 28.9 ~ "FrankValley",
     SectionNum >= 29 & SectionNum <= 49.9 ~ "KentCreekTrail",
     SectionNum >= 50 & SectionNum <= 68.9  ~ "Dipsea",
@@ -58,16 +58,22 @@ ggplot(HabitatChar_Coverage %>% filter(FieldSeason == "2022"), aes(x = "", y = p
   geom_col(width = 1) +
   facet_wrap(~HabChar) +
   coord_polar("y", start = 0)
-ggsave("Figures/River_Area_Pie.png", width = 10, height = 10, units = "in")
+ggsave("Figures/River_Area_Pie_2022.png", width = 10, height = 10, units = "in")
 
 ############ DIET by RIVER #################
+
+ggplot(HabitatChar_Coverage, aes(x = "", y = prop, fill = HabitatType)) +
+  geom_col(width = 1) +
+  facet_wrap(~HabChar + FieldSeason) +
+  coord_polar("y", start = 0)
+ggsave("Figures/River_Area_Pie.png", width = 10, height = 10, units = "in")
 
 # Coverage by dietdata
 
 DietHabitatChar_2 <- DietData_env %>%
   mutate(HabChar = case_when(
     SectionNum >= 0 & SectionNum <= 3.9 ~ "PacificWay",
-    SectionNum >= 4 & SectionNum <= 17.9 ~ "Highway1", 
+    SectionNum >= 4 & SectionNum <= 17.9 ~ "Highway1",
     SectionNum >= 18 & SectionNum <= 28.9 ~ "FrankValley",
     SectionNum >= 29 & SectionNum <= 49.9 ~ "KentCreekTrail",
     SectionNum >= 50 & SectionNum <= 68.9  ~ "Dipsea",
@@ -91,9 +97,32 @@ DietHabitatChar_2 %>%
   coord_polar("y", start = 0) +
   scale_fill_manual(values = c("#00BE67","#00BFC4", "#00A9FF", "#C77CFF", "#FF61CC"),
                      labels = c("Flatwater", "Mid-Channel Pool", "Plunge Pool", "Riffle", "Scour Pool"))
+ggsave("Figures/Fish_River_Habitat_2022.png", width = 10, height = 10, units = "in")
+
+DietHabitatChar_2 %>%
+  filter(Creek != "Fern Creek") %>%
+  count(HabChar, HabitatType, FieldSeason) %>%
+  group_by(HabChar, FieldSeason) %>%
+  mutate(prop = n / sum(n)) %>%
+  ggplot(aes(x = "", y = prop, fill = HabitatType)) +
+  geom_col(width = 1) +
+  facet_wrap(~HabChar + FieldSeason) +
+  coord_polar("y", start = 0)
+
 ggsave("Figures/Fish_River_Habitat.png", width = 10, height = 10, units = "in")
 
 ### Diet by habitat
+
+DietDataComb_HabChar <- DietDataComb %>%
+  mutate(HabChar = case_when(
+    SectionNum >= 0 & SectionNum <= 3.9 ~ "PacificWay",
+    SectionNum >= 4 & SectionNum <= 17.9 ~ "Highway1",
+    SectionNum >= 18 & SectionNum <= 28.9 ~ "FrankValley",
+    SectionNum >= 29 & SectionNum <= 49.9 ~ "KentCreekTrail",
+    SectionNum >= 50 & SectionNum <= 68.9  ~ "Dipsea",
+    SectionNum >= 69 & SectionNum <= 74 ~ "Foot4",
+  )) %>%
+  select(HabChar, everything())
 
 filtered_DietDataComb_HabChar <- DietDataComb_HabChar %>%
   filter(Creek != "Fern Creek", LifeStage == "YoY", FieldSeason == "2022")
@@ -161,7 +190,7 @@ Juvenile_Survey_HabChar$LocationCode <- as.numeric(Juvenile_Survey_HabChar$Locat
 Juvenile_Survey_HabChar <- Juvenile_Survey_HabChar %>%
   mutate(HabChar = case_when(
     LocationCode >= 0 & LocationCode <= 3.9 ~ "PacificWay",
-    LocationCode >= 4 & LocationCode <= 17.9 ~ "Highway1", 
+    LocationCode >= 4 & LocationCode <= 17.9 ~ "Highway1",
     LocationCode >= 18 & LocationCode <= 28.9 ~ "FrankValley",
     LocationCode >= 29 & LocationCode <= 49.9 ~ "KentCreekTrail",
     LocationCode >= 50 & LocationCode <= 68.9  ~ "Dipsea",
@@ -194,7 +223,6 @@ DietHabitatChar_2 %>%
   facet_wrap(~HabChar + FieldSeason) +
   coord_polar("y", start = 0)
 ggsave("Figures/Species_DietData_by_River.png", width = 6, height = 3.5, units = "in")
-
 
 ### Snorkel survey v. gut lavage samples 
 #grab juvenile survey from 1.4 and HabitatData_clean
