@@ -6,7 +6,7 @@ library(tidyverse)
 # Pull filtered_DietDataWhole from 0.2
 
 #make df 
-Invert_Comp_df <- filtered_DietDataWhole %>% 
+Invert_Comp_df  <- filtered_DietDataWhole %>% 
   select(SpeciesCode, Acari, Amphipoda, Ephemeroptera, Plecoptera, Trichoptera, Coleoptera, Diptera) %>%
   pivot_longer(cols = 2:8, names_to = "Order", values_to = "Counts") %>%
   group_by(SpeciesCode, Order) %>%
