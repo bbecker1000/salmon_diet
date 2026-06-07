@@ -1,12 +1,14 @@
 # Last updated 06/03/2026
-# notes:
+# Results:
   # fulton condition factor
     # a) fish measurements - sig. b/n CH[0.997], SH[1.108], CO[1.119] & FieldSeason 2022 > 2020 [0.054] dif.
     # b) diet data original - sig. b/n CH[1.015], SH[1.147], CO[1.126] & FieldSeason 2022 > 2020 [0.056] dif.
+    # c) by river reach - sig. dif. b/n river reach FCF in survey but not gut lavage data...
   # counts
     # proportions from seining + efishing seems to match diet data better (makes sense given they used similar methods to catch fish for gut lavage)
     # snorkel may be most representative but have the highest error...
 # NOTE: almost all graphed data is based on YoY lifestage... may want to make adjustments for final report
+  # might want to do stat. analysis by interaction
 
 # Libraries ---------------------------------------------------------------
 
@@ -60,6 +62,18 @@ diet_FCF_plot <- ggplot(diet_data_original %>% filter(LifeStage == "YoY"),
   geom_boxplot() +
   facet_wrap(~FieldSeason)
 
+## by river reach
+
+ggplot(fish_measurement %>% filter(LifeStage == "YoY", between(ForkLength, 30, 100), RiverReach != "Foot4"), 
+       aes(x = RiverReach, y = FultonConditionFactor, color = SpeciesCode)) +
+  geom_boxplot() +
+  facet_wrap(~FieldSeason)
+
+ggplot(fish_measurement %>% filter(LifeStage == "YoY", between(ForkLength, 30, 100), RiverReach != "Foot4"), 
+       aes(x = RiverReach, y = FultonConditionFactor)) +
+  geom_boxplot() +
+  facet_wrap(~FieldSeason)
+
 ### rough counts
 
 # snorkel 
@@ -90,7 +104,13 @@ diet_count_plot <- ggplot(diet_data_original %>%
 
 ### river mapping
 
+river_map <- rbind(unique(diet_data_original %>% select(Latitude, Longitude, RiverReach, StreamNumber)) %>% mutate(Data = "Diet"),
+      unique(fish_measurement %>% select(Latitude, Longitude, RiverReach, StreamNumber)) %>% mutate(Data = "Seining + efish"),
+      unique(fish_snorkel %>% select(Latitude, Longitude, RiverReach, StreamNumber)) %>% mutate(Data = "Snorkel"))
 
+ggplot(river_map %>% arrange(RiverReach, StreamNumber), aes(x = Longitude, y = Latitude)) +
+  geom_path(aes(group = RiverReach, linetype = RiverReach), linewidth = 1) + 
+  geom_jitter(aes(shape = Data, color = Data), size = 2, width = 0.0005, height = 0.0005)
 
 # Combining plots ---------------------------------------------------------
 
@@ -108,14 +128,16 @@ ggsave("Figures/New_Figures/Count_Comparison.png", width = 15, height = 10)
 
 ### fulton condition factor
 
-# fish measurement
+## fish measurement
 
-summary(glm(FultonConditionFactor ~ SpeciesCode + FieldSeason,
-            fish_measurement %>% filter(LifeStage == "YoY", between(ForkLength_mm, 30, 100)),
+# by species
+
+summary(glm(FultonConditionFactor ~ SpeciesCode + RiverReach + FieldSeason,
+            fish_measurement %>% filter(LifeStage == "YoY", between(ForkLength, 30, 100)),
             family = gaussian(link = "identity")))
 
 # diet data original
 
-summary(glm(FultonConditionFactor ~ SpeciesCode + FieldSeason,
+summary(glm(FultonConditionFactor ~ SpeciesCode + RiverReach + FieldSeason,
             diet_data_original %>% filter(LifeStage == "YoY"),
             family = gaussian(link = "identity")))
