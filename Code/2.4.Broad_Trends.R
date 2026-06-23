@@ -112,6 +112,9 @@ ggplot(river_map %>% arrange(RiverReach, StreamNumber), aes(x = Longitude, y = L
   geom_path(aes(group = RiverReach, linetype = RiverReach), linewidth = 1) + 
   geom_jitter(aes(shape = Data, color = Data), size = 2, width = 0.0005, height = 0.0005)
 
+ggplot(river_map %>% arrange(RiverReach, StreamNumber), aes(x = Longitude, y = Latitude)) +
+  geom_path(aes(group = RiverReach, linetype = RiverReach, color = RiverReach), linewidth = 1)
+
 # Combining plots ---------------------------------------------------------
 
 ### fulton condition factor
