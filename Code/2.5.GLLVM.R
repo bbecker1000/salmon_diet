@@ -14,11 +14,10 @@ library(grDevices)
 diet_data_original <- read_csv("Data/Created_Data/Diet_Data_Original.csv")
 diet_data_original_traits <- read_csv("Data/Created_Data/Diet_Taxa_Original_Traits.csv")
 
-
 # Modifying dataframe -----------------------------------------------------
 
 # remove empty stomach  (zero rows)
-diet_data_original_filtered <- diet_data_original[rowSums(diet_data_original[,21:37]) > 0,] %>% filter(LifeStage == "YoY")
+diet_data_original_filtered <- diet_data_original[rowSums(diet_data_original[,21:37]) > 0,] %>% filter(LifeStage == "YoY") %>% na.omit()
 
 # Model latent variable and distribution family selection -----------------------------------------------------
 
@@ -89,6 +88,7 @@ ColorsSC[diet_data_original_filtered$SpeciesCode == "SH"] = 'purple'
 simple_model <- gllvm(diet_data_original_filtered[,21:37],
               family = "ZIP", num.lv = 3, sd.errors = FALSE, seed = 1234)
 
+par(mfrow = c(1,1))
 ordiplot(simple_model, biplot = TRUE,
          main = "Ordination of ", symbols = TRUE, s.cex = 0.6, pch = pchSC, s.colors = ColorsSC)
 
@@ -104,16 +104,34 @@ ordiplot(site_model, biplot = TRUE,
 
 # Test and compare zero latent variable and zero covariate models ---------
 
-null_lv_model <- gllvm(diet_data_original_filtered[,21:37], diet_data_original_filtered[, 1:20] %>% select(SpeciesCode,FieldSeason,HabitatType), studyDesign = sDesign, 
-                       family = "ZIP", row.eff = ~(1|StreamNumber), num.lv = 0, 
-                       formula = ~ SpeciesCode + FieldSeason + HabitatType,
+diet_data_original_filtered <- diet_data_original_filtered %>%
+  mutate(ForkLength_scaled = as.numeric(scale(ForkLength)))
+
+null_lv_model <- gllvm(diet_data_original_filtered[,21:37], diet_data_original_filtered %>% select(SpeciesCode,FieldSeason,HabitatType,ForkLength_scaled), studyDesign = sDesign, 
+                       family = "ZIP",  num.lv = 0, 
+                       formula = ~ SpeciesCode + FieldSeason + HabitatType + ForkLength_scaled,
                        seed = 1234)
 
 coefplot(null_lv_model, cex.ylab = 0.7, mar = c(4, 9, 2, 1), mfrow=c(2,3), order = TRUE)
 
-final_model <- gllvm(diet_data_original_filtered[,21:37], diet_data_original_filtered[, 1:20] %>% select(SpeciesCode,FieldSeason,HabitatType), studyDesign = sDesign, 
+final_model <- gllvm(diet_data_original_filtered[,21:37], diet_data_original_filtered[, 1:20] %>% select(SpeciesCode,FieldSeason,HabitatType,ForkLength), studyDesign = sDesign, 
                        family = "ZIP", row.eff = ~(1|StreamNumber), num.lv = 3, 
-                       formula = ~ SpeciesCode + FieldSeason + HabitatType,
+                       formula = ~ SpeciesCode + FieldSeason + HabitatType + ForkLength,
                        seed = 1234)
 
 coefplot(final_model, cex.ylab = 0.7, mar = c(4, 9, 2, 1), mfrow=c(2,3), order = TRUE)
+
+ZIP_cov_AIC_comparison <- NULL
+for(i in 1:5){
+  fiti <- gllvm(diet_data_original_filtered[,21:37], diet_data_original_filtered[, 1:20] %>% select(SpeciesCode,FieldSeason,HabitatType), studyDesign = sDesign, 
+                family = "ZIP", row.eff = ~(1|StreamNumber), num.lv = i, 
+                formula = ~ SpeciesCode + FieldSeason + HabitatType,
+                seed = 1234)
+  ZIP_cov_AIC_comparison[i] <- summary(fiti)$AICc
+  names(ZIP_cov_AIC_comparison)[i] = i
+}
+ZIP_cov_AIC_comparison
+
+# Variance explained ------------------------------------------------------
+
+VP(null_lv_model)
