@@ -1,11 +1,11 @@
-diet_data_original = Combined dataset of diet [,21:37], fish morphometrics, and habitat characteristics 
-diet_taxa_original_traits = Morphometrics for diet taxa
+diet_data_original = Combined dataset of diet [,21:37], fish morphometrics, and habitat characteristics ("Data/Created_Data/Diet_Data_Original.csv")
+diet_taxa_original_traits = Morphometrics for diet taxa ("Data/Created_Data/Diet_Data_Original_Traits.csv")
 
-diet_data_terrestrial_or_aquatic = Combined dataset of diet, fish morphometrics, and habitat characteristics separated by terrestrial/aquatic
-diet_taxa_terrestrial_or_aquatic_traits = Morphometrics and terrestrial/aquatic for diet taxa
+diet_data_terrestrial_or_aquatic = Combined dataset of diet, fish morphometrics, and habitat characteristics separated by terrestrial/aquatic ("Data/Created_Data/Diet_Data_Terrestrial_Or_Aquatic.csv")
+diet_taxa_terrestrial_or_aquatic_traits = Morphometrics and terrestrial/aquatic for diet taxa ("Data/Created_Data/Diet_Data_Terrestrial_Or_Aquatic_Traits.csv")
 
-diet_data_raw = Combined dataset of diet [,21:49], fish morphometrics, and habitat characteristics with low counts included but non-food removed
+diet_data_raw = Combined dataset of diet [,21:49], fish morphometrics, and habitat characteristics with low counts included but non-food removed ("Data/Created_Data/Diet_Data_Raw.csv")
 
-fish_snorkel = Snorkel survey dataset
+fish_snorkel = Snorkel survey dataset ("Data/Created_Data/Fish_Snorkel.csv")
 
-fish_measurement = Seining + Efish survey dataset
+fish_measurement = Seining + Efish survey dataset ("Data/Created_Data/Fish_Measurement.csv")
