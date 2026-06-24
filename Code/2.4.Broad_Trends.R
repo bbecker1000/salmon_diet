@@ -4,6 +4,7 @@
     # a) fish measurements - sig. b/n CH[0.997], SH[1.108], CO[1.119] & FieldSeason 2022 > 2020 [0.054] dif.
     # b) diet data original - sig. b/n CH[1.015], SH[1.147], CO[1.126] & FieldSeason 2022 > 2020 [0.056] dif.
     # c) by river reach - sig. dif. b/n river reach FCF in survey but not gut lavage data...
+    # d) NZMS - no sig. dif. across those that consume or don't consume NZMS
   # counts
     # proportions from seining + efishing seems to match diet data better (makes sense given they used similar methods to catch fish for gut lavage)
     # snorkel may be most representative but have the highest error...
@@ -73,6 +74,15 @@ ggplot(fish_measurement %>% filter(LifeStage == "YoY", between(ForkLength, 30, 1
        aes(x = RiverReach, y = FultonConditionFactor)) +
   geom_boxplot() +
   facet_wrap(~FieldSeason)
+
+## new zealand mud snail
+
+diet_data_original %>%
+  filter(StreamNumber %in% nzms_stream_number, SpeciesCode == "SH") %>%
+  mutate(NZMS = case_when(Littorinimorpha == 0 ~ "Empty",
+                          Littorinimorpha > 0 ~ "Eaten")) %>%
+  ggplot(aes(x = NZMS, y = FultonConditionFactor, color = LifeStage)) +
+  geom_boxplot()
 
 ### rough counts
 
@@ -144,3 +154,21 @@ summary(glm(FultonConditionFactor ~ SpeciesCode + RiverReach + FieldSeason,
 summary(glm(FultonConditionFactor ~ SpeciesCode + RiverReach + FieldSeason,
             diet_data_original %>% filter(LifeStage == "YoY"),
             family = gaussian(link = "identity")))
+
+## new zealand mud snail testing
+
+# choose only the stream sites where the NZMS was found for comparisons across SH in the same pools
+nzms_stream_number <- unique((diet_data_original %>% filter(Littorinimorpha > 0, SpeciesCode == "SH"))$StreamNumber)
+
+# FCF as a function of NZMS found in gut controlled for size and age
+summary(glm(FultonConditionFactor ~ Littorinimorpha + ForkLength + LifeStage,
+            diet_data_original %>% filter(StreamNumber %in% nzms_stream_number, SpeciesCode == "SH"),
+            family = "gaussian"))
+
+# direct numbers
+diet_data_original %>%
+  filter(StreamNumber %in% nzms_stream_number, SpeciesCode == "SH") %>%
+  mutate(NZMS = case_when(Littorinimorpha == 0 ~ "Empty",
+                          Littorinimorpha > 0 ~ "Eaten")) %>%
+  group_by(NZMS, StreamNumber, LifeStage) %>%
+  summarize(mean(FultonConditionFactor), mean(ForkLength))
