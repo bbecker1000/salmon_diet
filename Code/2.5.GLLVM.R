@@ -8,6 +8,7 @@
 library(tidyverse)
 library(mvabund)
 library(grDevices)
+library(gllvm)
 
 # Calling files -----------------------------------------------------------
 
@@ -100,16 +101,18 @@ site_model <- gllvm(diet_data_original_filtered[,21:37], studyDesign = sDesign, 
                     num.lv = 3, sd.errors = FALSE, seed = 1234)
 
 ordiplot(site_model, biplot = TRUE,
-         main = "Ordination of ", symbols = TRUE, s.cex = 0.6, pch = pchSC, s.colors = ColorsSC)
+         main = "Latent Variable Biplot with Samples \nHighlight by Species", 
+         symbols = TRUE, s.cex = 0.6, pch = pchSC, s.colors = ColorsSC)
+legend("topleft", legend = c("CH", "CO", "SH"), pch = c(1, 2, 3), col = c('red','green','purple'), bty = "n")
 
 # Test and compare zero latent variable and zero covariate models ---------
 
 diet_data_original_filtered <- diet_data_original_filtered %>%
   mutate(ForkLength_scaled = as.numeric(scale(ForkLength)))
 
-null_lv_model <- gllvm(diet_data_original_filtered[,21:37], diet_data_original_filtered %>% select(SpeciesCode,FieldSeason,HabitatType,ForkLength_scaled), studyDesign = sDesign, 
-                       family = "ZIP",  num.lv = 0, 
-                       formula = ~ SpeciesCode + FieldSeason + HabitatType + ForkLength_scaled,
+null_lv_model <- gllvm(diet_data_original_filtered[,21:37], diet_data_original_filtered %>% select(SpeciesCode,FieldSeason,HabitatType), studyDesign = sDesign, 
+                       family = "ZIP",  num.lv = 0, row.eff = ~ (1|StreamNumber),
+                       formula = ~ SpeciesCode + FieldSeason + HabitatType,
                        seed = 1234)
 
 coefplot(null_lv_model, cex.ylab = 0.7, mar = c(4, 9, 2, 1), mfrow=c(2,3), order = TRUE)
