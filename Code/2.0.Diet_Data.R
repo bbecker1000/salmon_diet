@@ -65,7 +65,8 @@ fish_data_combined <- rbind(
            # correct case-sensitive first basin wide unit floor rounding from 0 to 1 (due to decimal values)
            BasinWideUnit = case_match(BasinWideUnit,
                                       0 ~ 1, 
-                                      .default = BasinWideUnit)), 
+                                      .default = BasinWideUnit),
+           FieldSeason = as.factor(FieldSeason)), 
   fish_22_data %>%
     select(SampleID_New, BasinWideUnit, StreamID, SpeciesCode, FieldSeason, LifeStage, ForkLength, FishWeight, FultonConditionFactor) %>%
     rename(Sample_ID = SampleID_New,
@@ -82,7 +83,7 @@ environmental_data <- habitat_data %>%
          Length_m, EstWidth_m, EstSurfaceArea_msq, MaxDepth_m, CrestDepth_m, ResidualPoolDepth_m) %>%
   rename(Creek = StreamName) %>%
   left_join(location_data %>% 
-              mutate(FieldSeason = as.character(FieldSeason)) %>%
+              mutate(FieldSeason = as.factor(FieldSeason)) %>%
               select(FieldSeason, BasinWideUnit, SectionNum), by = c("FieldSeason", "BasinWideUnit")) %>%
   # add river reach categorizations by stream number
   mutate(RiverReach = case_when(
