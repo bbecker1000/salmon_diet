@@ -95,7 +95,7 @@ ordiplot(simple_model, biplot = TRUE,
 
 legend("topleft", legend = c("CH", "CO", "SH"), pch = c(1, 2, 3), col = c('red','green','purple'), bty = "n")
 
-sDesign <- data.frame(StreamNumber = as.factor(diet_data_original_filtered$StreamNumber))
+sDesign <- data.frame(StreamNumber = as.factor((diet_data_original_filtered %>% filter(FieldSeason == 2022))$StreamNumber))
 
 site_model <- gllvm(diet_data_original_filtered[,21:37], studyDesign = sDesign, family = "ZIP", row.eff = ~(1|StreamNumber),
                     num.lv = 3, sd.errors = FALSE, seed = 1234)
@@ -110,9 +110,14 @@ legend("topleft", legend = c("CH", "CO", "SH"), pch = c(1, 2, 3), col = c('red',
 diet_data_original_filtered <- diet_data_original_filtered %>%
   mutate(ForkLength_scaled = as.numeric(scale(ForkLength)))
 
-null_lv_model <- gllvm(diet_data_original_filtered[,21:37], diet_data_original_filtered %>% select(SpeciesCode,FieldSeason,HabitatType), studyDesign = sDesign, 
+null_lv_model <- gllvm((diet_data_original_filtered %>% filter(FieldSeason == 2022))[,21:37], diet_data_original_filtered %>% filter(FieldSeason == 2022) %>% select(SpeciesCode,FieldSeason,HabitatType, ForkLength), studyDesign = sDesign, 
                        family = "ZIP",  num.lv = 0, row.eff = ~ (1|StreamNumber),
-                       formula = ~ SpeciesCode + FieldSeason + HabitatType,
+                       formula = ~ SpeciesCode + ForkLength + HabitatType,
+                       seed = 1234)
+
+fl_model <- gllvm(diet_data_original_filtered[,21:37], diet_data_original_filtered %>% mutate(FieldSeason = as.factor(FieldSeason)) %>% select(SpeciesCode,FieldSeason,HabitatType, ForkLength), studyDesign = sDesign, 
+                       family = "ZIP",  num.lv = 0, row.eff = ~ (1|StreamNumber),
+                       formula = ~ ForkLength + SpeciesCode + HabitatType,
                        seed = 1234)
 
 coefplot(null_lv_model, cex.ylab = 0.7, mar = c(4, 9, 2, 1), mfrow=c(2,3), order = TRUE)
@@ -137,4 +142,5 @@ ZIP_cov_AIC_comparison
 
 # Variance explained ------------------------------------------------------
 
-VP(null_lv_model)
+VP(fl_model)
+VP(final_model)
