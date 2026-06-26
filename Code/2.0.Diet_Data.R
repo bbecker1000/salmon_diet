@@ -111,7 +111,8 @@ diet_data_original <- fish_data_combined %>%
               mutate(across(everything(), ~ coalesce(., 0))) %>%
               select(-all_of(low_count_taxa_original), -all_of(non_food_taxa_original)),
             by = "Sample_ID") %>%
-  mutate(across(all_of(21:37), ~ coalesce(.,0))) %>%
+  mutate(across(all_of(21:37), ~ coalesce(.,0)),
+         FieldSeason = as.factor(FieldSeason)) %>%
   # filter fern creek as most samples come from redwood creek
   # filter all samples from "Foot 4" river reach due to low samples and which were only in 2020
   filter(Creek != "Fern Creek", 
@@ -131,7 +132,8 @@ diet_data_terrestrial_or_aquatic <- fish_data_combined %>%
               mutate(across(everything(), ~ coalesce(., 0))) %>%
               select(-all_of(low_count_taxa_terrestrial_or_aquatic), -all_of(non_food_taxa_terrestrial_or_aquatic)),
             by = "Sample_ID") %>%
-  mutate(across(all_of(21:47), ~ coalesce(.,0))) %>%
+  mutate(across(all_of(21:47), ~ coalesce(.,0)),
+         FieldSeason = as.factor(FieldSeason)) %>%
   # filter fern creek as most samples come from redwood creek
   # filter all samples from "Foot 4" river reach due to low samples and which were only in 2020
   filter(Creek != "Fern Creek", 
@@ -151,7 +153,8 @@ diet_data_raw <- fish_data_combined %>%
               mutate(across(everything(), ~ coalesce(., 0))) %>%
               select(-all_of(non_food_taxa_original)),
             by = "Sample_ID") %>%
-  mutate(across(all_of(21:49), ~ coalesce(.,0))) %>%
+  mutate(across(all_of(21:49), ~ coalesce(.,0)),
+         FieldSeason = as.factor(FieldSeason)) %>%
   # filter fern creek as most samples come from redwood creek
   # filter all samples from "Foot 4" river reach due to low samples and which were only in 2020
   filter(Creek != "Fern Creek", 
