@@ -86,6 +86,11 @@ ColorsSC[diet_data_original_filtered$SpeciesCode == "CH"] = 'red'
 ColorsSC[diet_data_original_filtered$SpeciesCode == "CO"] = 'green'
 ColorsSC[diet_data_original_filtered$SpeciesCode == "SH"] = 'purple'
 
+ColorsSC <- NULL
+ColorsSC[diet_data_original_filtered$FieldSeason == 2020] = 'red'
+ColorsSC[diet_data_original_filtered$FieldSeason == 2022] = 'green'
+
+
 simple_model <- gllvm(diet_data_original_filtered[,21:37],
               family = "ZIP", num.lv = 3, sd.errors = FALSE, seed = 1234)
 
@@ -95,10 +100,11 @@ ordiplot(simple_model, biplot = TRUE,
 
 legend("topleft", legend = c("CH", "CO", "SH"), pch = c(1, 2, 3), col = c('red','green','purple'), bty = "n")
 
-sDesign <- data.frame(StreamNumber = as.factor((diet_data_original_filtered %>% filter(FieldSeason == 2022))$StreamNumber))
+sDesign_raw <- data.frame(StreamNumber = diet_data_original_filtered$StreamNumber)
+sDesign <- data.frame(StreamNumber = as.factor(diet_data_original_filtered$StreamNumber))
 
-site_model <- gllvm(diet_data_original_filtered[,21:37], studyDesign = sDesign, family = "ZIP", row.eff = ~(1|StreamNumber),
-                    num.lv = 3, sd.errors = FALSE, seed = 1234)
+site_model <- gllvm(diet_data_original_filtered[,21:37], studyDesign = sDesign_raw, family = "ZIP", row.eff = ~(1|StreamNumber),
+                    num.lv = 3, seed = 1234)
 
 ordiplot(site_model, biplot = TRUE,
          main = "Latent Variable Biplot with Samples \nHighlight by Species", 
@@ -110,7 +116,7 @@ legend("topleft", legend = c("CH", "CO", "SH"), pch = c(1, 2, 3), col = c('red',
 diet_data_original_filtered <- diet_data_original_filtered %>%
   mutate(ForkLength_scaled = as.numeric(scale(ForkLength)))
 
-null_lv_model <- gllvm((diet_data_original_filtered %>% filter(FieldSeason == 2022))[,21:37], diet_data_original_filtered %>% filter(FieldSeason == 2022) %>% select(SpeciesCode,FieldSeason,HabitatType, ForkLength), studyDesign = sDesign, 
+null_lv_model <- gllvm(diet_data_original_filtered[,21:37], diet_data_original_filtered %>% select(SpeciesCode,FieldSeason,HabitatType, ForkLength), studyDesign = sDesign, 
                        family = "ZIP",  num.lv = 0, row.eff = ~ (1|StreamNumber),
                        formula = ~ SpeciesCode + ForkLength + HabitatType,
                        seed = 1234)
@@ -122,9 +128,9 @@ fl_model <- gllvm(diet_data_original_filtered[,21:37], diet_data_original_filter
 
 coefplot(null_lv_model, cex.ylab = 0.7, mar = c(4, 9, 2, 1), mfrow=c(2,3), order = TRUE)
 
-final_model <- gllvm(diet_data_original_filtered[,21:37], diet_data_original_filtered[, 1:20] %>% select(SpeciesCode,FieldSeason,HabitatType,ForkLength), studyDesign = sDesign, 
+final_model <- gllvm((diet_data_original_filtered %>% filter(FieldSeason == 2022))[,21:37], diet_data_original_filtered %>% filter(FieldSeason == 2022) %>% select(SpeciesCode,FieldSeason,HabitatType,ForkLength), studyDesign = sDesign, 
                        family = "ZIP", row.eff = ~(1|StreamNumber), num.lv = 3, 
-                       formula = ~ SpeciesCode + FieldSeason + HabitatType + ForkLength,
+                       formula = ~ SpeciesCode + HabitatType + ForkLength,
                        seed = 1234)
 
 coefplot(final_model, cex.ylab = 0.7, mar = c(4, 9, 2, 1), mfrow=c(2,3), order = TRUE)
