@@ -139,6 +139,16 @@ diet_data_terrestrial_or_aquatic %>%
   ggplot(aes(x = SpeciesCode, y = Proportion, fill = Terrestrial_or_Aquatic)) +
   geom_col()
 
+### data distribution
+
+ggplot(diet_data_original %>% 
+         pivot_longer(cols = 21:37, names_to = "Taxa", values_to = "Count"), 
+       aes(x = Count)) + 
+  geom_histogram(binwidth = 1) + 
+  facet_wrap(~Taxa, scales = "free") +
+  labs(x = "Gut Lavage Counts", y = "Frequency")
+ggsave("Figures/New_Figures/Data_Dispersion.png", width = 14, height = 10)
+
 # nmds --------------------------------------------------------------------
 
 diet_data_empty_stomachs_removed <- diet_data_original %>%
