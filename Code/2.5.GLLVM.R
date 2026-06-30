@@ -72,6 +72,13 @@ for(i in 1:5){
 }
 ZINB_AIC_comparison
 
+Model_Testing_df <- data.frame(Latent_Variables = c(1,2,3,4,5),
+           Normal = gaussian_AIC_comparison,
+           Poisson = poisson_AIC_comparison,
+           Negative_Binomial = negative_binomial_AIC_comparison,
+           Zero_Inflated_Negative_Binomial = ZINB_AIC_comparison,
+           Zero_Inflated_Poisson = ZIP_AIC_comparison)
+
 # ordination plot ---------------------------------------------------------
 
 # assigning shape values to species code
@@ -85,10 +92,6 @@ ColorsSC <- NULL
 ColorsSC[diet_data_original_filtered$SpeciesCode == "CH"] = 'red'
 ColorsSC[diet_data_original_filtered$SpeciesCode == "CO"] = 'green'
 ColorsSC[diet_data_original_filtered$SpeciesCode == "SH"] = 'purple'
-
-ColorsSC <- NULL
-ColorsSC[diet_data_original_filtered$FieldSeason == 2020] = 'red'
-ColorsSC[diet_data_original_filtered$FieldSeason == 2022] = 'green'
 
 
 simple_model <- gllvm(diet_data_original_filtered[,21:37],
@@ -106,10 +109,14 @@ sDesign <- data.frame(StreamNumber = as.factor(diet_data_original_filtered$Strea
 site_model <- gllvm(diet_data_original_filtered[,21:37], studyDesign = sDesign_raw, family = "ZIP", row.eff = ~(1|StreamNumber),
                     num.lv = 3, seed = 1234)
 
+png("Figures/New_Figures/LV_Biplot.png", width = 7, height = 7, units = "in", res = 300)
 ordiplot(site_model, biplot = TRUE,
-         main = "Latent Variable Biplot with Samples \nHighlight by Species", 
-         symbols = TRUE, s.cex = 0.6, pch = pchSC, s.colors = ColorsSC)
+         main = "Latent Variable Biplot by Species",
+         symbols = TRUE, s.cex = 0.6, pch = pchSC, s.colors = ColorsSC, jitter = TRUE)
+mtext("58.5% var. explained", side = 1, line = 2.1)
+mtext("23.9% var. explained", side = 2, line = 2.1)
 legend("topleft", legend = c("CH", "CO", "SH"), pch = c(1, 2, 3), col = c('red','green','purple'), bty = "n")
+dev.off()
 
 # Test and compare zero latent variable and zero covariate models ---------
 
@@ -150,3 +157,7 @@ ZIP_cov_AIC_comparison
 
 VP(fl_model)
 VP(final_model)
+
+# Exporting figures -------------------------------------------------------
+
+write.csv(Model_Testing_df,"Figures/New_Figures/Model_Testing.csv", row.names = FALSE)
