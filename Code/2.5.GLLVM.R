@@ -128,7 +128,7 @@ ColorsFS[diet_data_original_filtered$FieldSeason == 2022] = 'green'
 png("Figures/New_Figures/LV_Biplot_Field_Season.png", width = 7, height = 7, units = "in", res = 300)
 ordiplot(site_model, biplot = TRUE,
          main = "Latent Variable Biplot by Field Season",
-         symbols = TRUE, s.cex = 0.6, s.colors = ColorsFS, jitter = TRUE)
+         symbols = TRUE, s.cex = 0.6, pch = pchSC, s.colors = ColorsFS, jitter = TRUE)
 mtext("58.5% var. explained", side = 1, line = 2.1)
 mtext("23.9% var. explained", side = 2, line = 2.1)
 legend("topleft", legend = c("2020","2022"), pch = 1, col = c('red','green'), bty = "n")
@@ -144,7 +144,7 @@ ColorsHT[diet_data_original_filtered$HabitatType == "Flatwater"] = 'purple'
 png("Figures/New_Figures/LV_Biplot_Habitat_Type.png", width = 7, height = 7, units = "in", res = 300)
 ordiplot(site_model, biplot = TRUE,
          main = "Latent Variable Biplot by Habitat Type",
-         symbols = TRUE, s.cex = 0.6, s.colors = ColorsHT, jitter = TRUE)
+         symbols = TRUE, s.cex = 0.6, s.colors = ColorsHT, pch = pchSC, jitter = TRUE)
 mtext("58.5% var. explained", side = 1, line = 2.1)
 mtext("23.9% var. explained", side = 2, line = 2.1)
 legend("topleft", legend = c("Mid-Channel Pool","Scour Pool", "Flatwater"), pch = 1, col = c('red','green','purple'), bty = "n")
@@ -159,7 +159,7 @@ ColorsFL <- rbPal(20)[as.numeric(cut(FL, breaks = 20))]
 png("Figures/New_Figures/LV_Biplot_Fork_Length.png", width = 7, height = 7, units = "in", res = 300)
 ordiplot(site_model, biplot = TRUE,
          main = "Latent Variable Biplot by Fork Length",
-         symbols = TRUE, s.cex = 0.6, s.colors = ColorsFL, jitter = TRUE)
+         symbols = TRUE, s.cex = 0.6, pch = pchSC, s.colors = ColorsFL,  jitter = TRUE)
 mtext("58.5% var. explained", side = 1, line = 2.1)
 mtext("23.9% var. explained", side = 2, line = 2.1)
 legend("topleft", legend = c("Small", "Large"), pch = 1, col = c('red','green'), bty = "n")
@@ -170,17 +170,14 @@ dev.off()
 diet_data_original_filtered <- diet_data_original_filtered %>%
   mutate(ForkLength_scaled = as.numeric(scale(ForkLength)))
 
-null_lv_model <- gllvm(diet_data_original_filtered[,21:37], diet_data_original_filtered %>% select(SpeciesCode,FieldSeason,HabitatType, ForkLength), studyDesign = sDesign, 
+null_lv_model <- gllvm(diet_data_original_filtered[,21:37], diet_data_original_filtered %>% select(SpeciesCode,FieldSeason, HabitatType, ForkLength), studyDesign = sDesign, 
                        family = "ZIP",  num.lv = 0, row.eff = ~ (1|StreamNumber),
-                       formula = ~ SpeciesCode + ForkLength + HabitatType,
+                       formula = ~ SpeciesCode + ForkLength + FieldSeason,
                        seed = 1234)
 
-fl_model <- gllvm(diet_data_original_filtered[,21:37], diet_data_original_filtered %>% mutate(FieldSeason = as.factor(FieldSeason)) %>% select(SpeciesCode,FieldSeason,HabitatType, ForkLength), studyDesign = sDesign, 
-                       family = "ZIP",  num.lv = 0, row.eff = ~ (1|StreamNumber),
-                       formula = ~ ForkLength + SpeciesCode + HabitatType,
-                       seed = 1234)
-
+png("Figures/New_Figures/GLLVM_Coef_Plot.png", width = 9, height = 6, units = "in", res = 300)
 coefplot(null_lv_model, cex.ylab = 0.7, mar = c(4, 9, 2, 1), mfrow=c(2,3), order = TRUE)
+dev.off()
 
 final_model <- gllvm((diet_data_original_filtered %>% filter(FieldSeason == 2022))[,21:37], diet_data_original_filtered %>% filter(FieldSeason == 2022) %>% select(SpeciesCode,FieldSeason,HabitatType,ForkLength), studyDesign = sDesign, 
                        family = "ZIP", row.eff = ~(1|StreamNumber), num.lv = 3, 
