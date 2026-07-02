@@ -165,6 +165,31 @@ mtext("23.9% var. explained", side = 2, line = 2.1)
 legend("topleft", legend = c("Small", "Large"), pch = 1, col = c('red','green'), bty = "n")
 dev.off()
 
+### ZINB
+
+simple_model_2 <- gllvm(diet_data_original_filtered[,21:37],studyDesign = sDesign_raw,row.eff = ~(1|StreamNumber), 
+                        family = "ZINB", num.lv = 2, sd.errors = FALSE, seed = 1234)
+
+ordiplot(simple_model_2, biplot = TRUE,
+         main = "Latent Variable Biplot by Species",
+         symbols = TRUE, s.cex = 1, pch = pchSC, s.colors = ColorsSC)
+legend("topleft", legend = c("CH", "CO", "SH"), pch = c(1, 2, 3), col = c('red','green','purple'), bty = "n")
+
+ordiplot(simple_model_2, biplot = FALSE,
+         main = "Latent Variable Biplot by Habitat Type",
+         symbols = TRUE, s.cex = 1, pch = pchSC, s.colors = ColorsHT)
+legend("topleft", legend = c("Mid-Channel Pool","Scour Pool", "Flatwater"), pch = 1, col = c('red','green','purple'), bty = "n")
+
+ordiplot(simple_model_2, biplot = FALSE,
+         main = "Latent Variable Biplot by Field Season",
+         symbols = TRUE, s.cex = 1, pch = pchSC, s.colors = ColorsFS)
+legend("topleft", legend = c("2020","2022"), pch = 1, col = c('red','green'), bty = "n")
+
+ordiplot(simple_model_2, biplot = FALSE,
+         main = "Latent Variable Biplot by Fork Length",
+         symbols = TRUE, s.cex = 0.6, pch = pchSC, s.colors = ColorsFL)
+legend("topleft", legend = c("Small", "Large"), pch = 1, col = c('red','green'), bty = "n")
+
 # Test and compare zero latent variable and zero covariate models ---------
 
 diet_data_original_filtered <- diet_data_original_filtered %>%
@@ -175,8 +200,23 @@ null_lv_model <- gllvm(diet_data_original_filtered[,21:37], diet_data_original_f
                        formula = ~ SpeciesCode + ForkLength + FieldSeason,
                        seed = 1234)
 
+test_model <- gllvm(diet_data_original_filtered[,21:37], diet_data_original_filtered %>% mutate(FieldSeason = as.factor(FieldSeason)) %>% select(SpeciesCode,FieldSeason, HabitatType, ForkLength), studyDesign = sDesign, 
+                       family = "ZINB",  num.lv = 0, row.eff = ~ (1|StreamNumber),
+                       formula = ~ SpeciesCode +  HabitatType + ForkLength + FieldSeason,
+                       seed = 1234)
+
+null_lv_HT_model <- gllvm(diet_data_original_filtered[,21:37], diet_data_original_filtered %>% select(SpeciesCode,FieldSeason, HabitatType, ForkLength), studyDesign = sDesign, 
+                       family = "ZIP",  num.lv = 0, row.eff = ~ (1|StreamNumber),
+                       formula = ~ SpeciesCode + ForkLength + HabitatType,
+                       seed = 1234)
+
+null_lv_HT_FS_model <- gllvm(diet_data_original_filtered[,21:37], diet_data_original_filtered %>% select(SpeciesCode,FieldSeason, HabitatType, ForkLength), studyDesign = sDesign, 
+                          family = "ZIP",  num.lv = 0, row.eff = ~ (1|StreamNumber),
+                          formula = ~ SpeciesCode + FieldSeason + HabitatType,
+                          seed = 1234)
+
 png("Figures/New_Figures/GLLVM_Coef_Plot.png", width = 9, height = 6, units = "in", res = 300)
-coefplot(null_lv_model, cex.ylab = 0.7, mar = c(4, 9, 2, 1), mfrow=c(2,3), order = TRUE)
+coefplot(test_model, cex.ylab = 0.7, mar = c(4, 9, 2, 1), mfrow=c(2,3), order = TRUE)
 dev.off()
 
 final_model <- gllvm((diet_data_original_filtered %>% filter(FieldSeason == 2022))[,21:37], diet_data_original_filtered %>% filter(FieldSeason == 2022) %>% select(SpeciesCode,FieldSeason,HabitatType,ForkLength), studyDesign = sDesign, 
