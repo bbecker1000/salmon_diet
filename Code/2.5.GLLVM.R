@@ -109,6 +109,7 @@ sDesign <- data.frame(StreamNumber = as.factor(diet_data_original_filtered$Strea
 site_model <- gllvm(diet_data_original_filtered[,21:37], studyDesign = sDesign_raw, family = "ZIP", row.eff = ~(1|StreamNumber),
                     num.lv = 3, seed = 1234)
 
+## plot by species
 png("Figures/New_Figures/LV_Biplot.png", width = 7, height = 7, units = "in", res = 300)
 ordiplot(site_model, biplot = TRUE,
          main = "Latent Variable Biplot by Species",
@@ -116,6 +117,52 @@ ordiplot(site_model, biplot = TRUE,
 mtext("58.5% var. explained", side = 1, line = 2.1)
 mtext("23.9% var. explained", side = 2, line = 2.1)
 legend("topleft", legend = c("CH", "CO", "SH"), pch = c(1, 2, 3), col = c('red','green','purple'), bty = "n")
+dev.off()
+
+# assigning color values to fieldseason code
+ColorsFS <- NULL
+ColorsFS[diet_data_original_filtered$FieldSeason == 2020] = 'red'
+ColorsFS[diet_data_original_filtered$FieldSeason == 2022] = 'green'
+
+## plot by season
+png("Figures/New_Figures/LV_Biplot_Field_Season.png", width = 7, height = 7, units = "in", res = 300)
+ordiplot(site_model, biplot = TRUE,
+         main = "Latent Variable Biplot by Field Season",
+         symbols = TRUE, s.cex = 0.6, s.colors = ColorsFS, jitter = TRUE)
+mtext("58.5% var. explained", side = 1, line = 2.1)
+mtext("23.9% var. explained", side = 2, line = 2.1)
+legend("topleft", legend = c("2020","2022"), pch = 1, col = c('red','green'), bty = "n")
+dev.off()
+
+# assigning color values to fieldseason code
+ColorsHT <- NULL
+ColorsHT[diet_data_original_filtered$HabitatType == "Mid-Channel Pool"] = 'red'
+ColorsHT[diet_data_original_filtered$HabitatType == "Scour Pool"] = 'green'
+ColorsHT[diet_data_original_filtered$HabitatType == "Flatwater"] = 'purple'
+
+## plot by habitat type
+png("Figures/New_Figures/LV_Biplot_Habitat_Type.png", width = 7, height = 7, units = "in", res = 300)
+ordiplot(site_model, biplot = TRUE,
+         main = "Latent Variable Biplot by Habitat Type",
+         symbols = TRUE, s.cex = 0.6, s.colors = ColorsHT, jitter = TRUE)
+mtext("58.5% var. explained", side = 1, line = 2.1)
+mtext("23.9% var. explained", side = 2, line = 2.1)
+legend("topleft", legend = c("Mid-Channel Pool","Scour Pool", "Flatwater"), pch = 1, col = c('red','green','purple'), bty = "n")
+dev.off()
+
+# assign color values to fork length
+FL <- DietData_traits$ForkLength
+rbPal <- colorRampPalette(c('red', 'green'))
+ColorsFL <- rbPal(20)[as.numeric(cut(FL, breaks = 20))]
+
+## plot by fork length
+png("Figures/New_Figures/LV_Biplot_Fork_Length.png", width = 7, height = 7, units = "in", res = 300)
+ordiplot(site_model, biplot = TRUE,
+         main = "Latent Variable Biplot by Fork Length",
+         symbols = TRUE, s.cex = 0.6, s.colors = ColorsFL, jitter = TRUE)
+mtext("58.5% var. explained", side = 1, line = 2.1)
+mtext("23.9% var. explained", side = 2, line = 2.1)
+legend("topleft", legend = c("Small", "Large"), pch = 1, col = c('red','green'), bty = "n")
 dev.off()
 
 # Test and compare zero latent variable and zero covariate models ---------
