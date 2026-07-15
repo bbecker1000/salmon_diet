@@ -161,3 +161,4 @@ SH_habitat_rarecurve_plot <- rarecurve(SH_river_reach_matrix, step = 5,
 # Combined plots ----------------------------------------------------------
 
 par(mfrow = c(2,2))
+
