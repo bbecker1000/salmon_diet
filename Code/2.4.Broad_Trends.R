@@ -172,3 +172,29 @@ diet_data_original %>%
                           Littorinimorpha > 0 ~ "Eaten")) %>%
   group_by(NZMS, StreamNumber, LifeStage) %>%
   summarize(mean(FultonConditionFactor), mean(ForkLength))
+
+### stat testing across sample and population data
+combined_morphometric_df <- rbind(diet_data_original %>% 
+        select(FultonConditionFactor, ForkLength, SpeciesCode, FieldSeason, LifeStage) %>%
+        mutate(Data = "Gut Lavage"),
+      fish_measurement %>% 
+        filter(between(ForkLength, 30, 100)) %>%
+        select(FultonConditionFactor, ForkLength, SpeciesCode, FieldSeason, LifeStage) %>%
+        mutate(Data = "E-fishing"))
+
+combined_morphometric_df %>% 
+  group_by(SpeciesCode, Data) %>%
+  drop_na() %>%
+  summarize(mean(FultonConditionFactor), sd(FultonConditionFactor))
+
+summary(glm(FultonConditionFactor ~ FieldSeason * Data,
+            combined_morphometric_df %>% filter(LifeStage == "YoY", SpeciesCode == "SH"),
+            family = gaussian(link = "identity")))
+
+
+summary(glm(FultonConditionFactor ~ Data,
+            combined_morphometric_df %>% 
+              filter(SpeciesCode == "SH",
+                     LifeStage == "YoY",
+                     FieldSeason == 2020),
+            family = gaussian(link = "identity")))
