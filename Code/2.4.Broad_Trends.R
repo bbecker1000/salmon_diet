@@ -15,6 +15,8 @@
 
 library(tidyverse)
 library(patchwork)
+library(glmmTMB)
+library(DHARMa)
 
 # Calling files -----------------------------------------------------------
 
@@ -182,19 +184,26 @@ combined_morphometric_df <- rbind(diet_data_original %>%
         select(FultonConditionFactor, ForkLength, SpeciesCode, FieldSeason, LifeStage) %>%
         mutate(Data = "E-fishing"))
 
+fish_measurement %>% 
+  group_by(SpeciesCode, FieldSeason, LifeStage) %>%
+  drop_na() %>%
+  summarize(mean(FultonConditionFactor), sd(FultonConditionFactor), mean(ForkLength), sd(ForkLength))
+
+diet_data_original %>% 
+  group_by(SpeciesCode, FieldSeason, LifeStage) %>%
+  drop_na() %>%
+  summarize(mean(FultonConditionFactor), sd(FultonConditionFactor), mean(ForkLength), sd(ForkLength))
+
 combined_morphometric_df %>% 
   group_by(SpeciesCode, Data) %>%
   drop_na() %>%
-  summarize(mean(FultonConditionFactor), sd(FultonConditionFactor))
-
-summary(glm(FultonConditionFactor ~ FieldSeason * Data,
-            combined_morphometric_df %>% filter(LifeStage == "YoY", SpeciesCode == "SH"),
+  summarize(mean(FultonConditionFactor), sd(FultonConditionFactor))summary(glm(FultonConditionFactor ~ FieldSeason + LifeStage + SpeciesCode + Data,
+            combined_morphometric_df,
             family = gaussian(link = "identity")))
 
+qq <- glmmTMB(FultonConditionFactor ~ FieldSeason + LifeStage + SpeciesCode + Data,
+       combined_morphometric_df,
+       family = t_family(link = "identity"))
 
-summary(glm(FultonConditionFactor ~ Data,
-            combined_morphometric_df %>% 
-              filter(SpeciesCode == "SH",
-                     LifeStage == "YoY",
-                     FieldSeason == 2020),
-            family = gaussian(link = "identity")))
+sim_res <- simulateResiduals(fittedModel = qq, n = 250)
+plot(sim_res)
