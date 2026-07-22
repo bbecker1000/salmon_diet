@@ -1,4 +1,4 @@
-# Last updated 06/03/2026
+# Last updated 07/21/2026
 # Results:
   # fulton condition factor
     # a) fish measurements - sig. b/n CH[0.997], SH[1.108], CO[1.119] & FieldSeason 2022 > 2020 [0.054] dif.
@@ -115,6 +115,7 @@ measurement_count_plot <- ggplot(fish_measurement,
 # diet 
 
 diet_count_plot <- ggplot(diet_data_original %>% 
+                            filter(LifeStage != "NA") %>%
                             group_by(SpeciesCode, FieldSeason, LifeStage) %>% 
                             summarize(Count = n()),
                           aes(x = SpeciesCode, y = Count, fill = LifeStage)) +
@@ -134,6 +135,45 @@ ggplot(river_map %>% arrange(RiverReach, StreamNumber), aes(x = Longitude, y = L
 
 ggplot(river_map %>% arrange(RiverReach, StreamNumber), aes(x = Longitude, y = Latitude)) +
   geom_path(aes(group = RiverReach, linetype = RiverReach, color = RiverReach), linewidth = 1)
+
+### snorkel survey
+
+combined_count_df <- rbind(fish_snorkel %>%
+        select(SpeciesCode, Count, LifeStage, FieldSeason) %>%
+        mutate(Data = "Snorkel"),
+      fish_measurement %>%
+        select(SpeciesCode, NumberOfFish, LifeStage, FieldSeason) %>%
+        rename(Count = NumberOfFish) %>%
+        mutate(Data = "E-fishing"))
+
+ggplot(combined_count_df, aes(x = SpeciesCode, y = Count, fill = LifeStage)) +
+  geom_col() +
+  facet_wrap(Data ~ FieldSeason)
+ggsave("Figures/New_Figures/Raw_Counts_Surveys.png", width = 10, height = 8, unit = "in")
+
+combined_prop_df <- rbind(fish_snorkel %>%
+        filter(LifeStage == "YoY") %>%
+        group_by(SpeciesCode, FieldSeason) %>%
+        summarise(Count = sum(Count, na.rm = TRUE),
+                  .groups = "drop") %>%
+        group_by(FieldSeason) %>%
+        mutate(Proportion = Count / sum(Count),
+               Data = "Snorkel") %>%
+        ungroup(),
+      fish_measurement %>%
+        filter(LifeStage == "YoY") %>%
+        group_by(SpeciesCode, FieldSeason) %>%
+        summarise(Count = sum(NumberOfFish, na.rm = TRUE),
+                  .groups = "drop") %>%
+        group_by(FieldSeason) %>%
+        mutate(Proportion = Count / sum(Count),
+               Data = "E-fishing") %>%
+        ungroup())
+
+ggplot(combined_prop_df, aes(x = as.factor(FieldSeason), y = Proportion, fill = SpeciesCode)) +
+  geom_col() +
+  facet_wrap(~Data)
+ggsave("Figures/New_Figures/Proportion_Surveys.png", width = 8, height = 6, units = "in")
 
 # Combining plots ---------------------------------------------------------
 
