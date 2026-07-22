@@ -34,11 +34,18 @@ diet_data_original <- read.csv("Data/Created_Data/Diet_Data_Original.csv")
 
 # limit life stage and dimensions to diet data set
 survey_length_weight_plot <- ggplot(fish_measurement %>% filter(LifeStage == "YoY", between(ForkLength, 30, 100)), 
-       aes(x = ForkLength, y = FishWeight, color = SpeciesCode)) +
-  geom_point() +
+                                    aes(x = ForkLength, y = FishWeight, color = SpeciesCode, shape = SpeciesCode)) +
+  geom_point(alpha = 0.5) +
   facet_wrap(~FieldSeason) +
-  stat_smooth(formula = y ~ splines::ns(x, 3),
-              method = "glm")
+  stat_smooth(formula = y ~ x,
+              method = "glm",
+              method.args = list(family = gaussian(link = "log"))) +
+  scale_color_discrete(labels = c("CH" = "Chinook", "CO" = "Coho", "SH" = "Steelhead")) +
+  scale_shape_discrete(labels = c("CH" = "Chinook", "CO" = "Coho", "SH" = "Steelhead")) +
+  labs(x = "Fork Length (mm)",
+       y = "Fish Weight (g)",
+       color = "Species",
+       shape = "Species")
 
 # fish measurement fulton condition factor
 
@@ -55,8 +62,9 @@ diet_length_weight_plot <- ggplot(diet_data_original %>% filter(LifeStage == "Yo
        aes(x = ForkLength, y = FishWeight, color = SpeciesCode)) +
   geom_point() +
   facet_wrap(~FieldSeason) +
-  stat_smooth(formula = y ~ splines::ns(x, 3),
-              method = "glm")
+  stat_smooth(formula = y ~ x,
+              method = "glm",
+              method.args = list(family = gaussian(link = "log")))
 
 # diet data original fulton condition factor
 
@@ -177,11 +185,11 @@ diet_data_original %>%
 
 ### stat testing across sample and population data
 combined_morphometric_df <- rbind(diet_data_original %>% 
-        select(FultonConditionFactor, ForkLength, SpeciesCode, FieldSeason, LifeStage) %>%
+        select(FultonConditionFactor, ForkLength, SpeciesCode, FieldSeason, LifeStage, FishWeight) %>%
         mutate(Data = "Gut Lavage"),
       fish_measurement %>% 
         filter(between(ForkLength, 30, 100)) %>%
-        select(FultonConditionFactor, ForkLength, SpeciesCode, FieldSeason, LifeStage) %>%
+        select(FultonConditionFactor, ForkLength, SpeciesCode, FieldSeason, LifeStage, FishWeight) %>%
         mutate(Data = "E-fishing"))
 
 fish_measurement %>% 
@@ -207,3 +215,64 @@ qq <- glmmTMB(FultonConditionFactor ~ FieldSeason + LifeStage + SpeciesCode + Da
 
 sim_res <- simulateResiduals(fittedModel = qq, n = 250)
 plot(sim_res)
+
+# Finalized plots ---------------------------------------------------------
+
+FCF_summary <- combined_morphometric_df %>% 
+  group_by(SpeciesCode, Data) %>% 
+  summarize(FCF = format(round(mean(FultonConditionFactor, na.rm = TRUE), 2), nsmall = 2),
+            sd = format(round(sd(FultonConditionFactor, na.rm = TRUE), 2), nsmall = 2),
+            .groups = 'drop')
+
+# fork length vs. fish weight colored by data, faceted by species w/ FCF text
+ggplot(combined_morphometric_df %>% filter(LifeStage == "YoY"), 
+       aes(x = ForkLength, y = FishWeight, color = Data, shape = Data)) +
+  geom_point(alpha = 0.5) +
+  facet_wrap(~SpeciesCode, 
+             labeller = labeller(SpeciesCode = c("CH" = "Chinook", 
+                                                 "CO" = "Coho",
+                                                 "SH" = "Steelhead"))) +
+  stat_smooth(formula = y ~ x,
+              method = "glm",
+              method.args = list(family = gaussian(link = "log")),
+              color = "black",
+              linewidth = 1.5) +
+  stat_smooth(formula = y ~ x,
+              method = "glm",
+              method.args = list(family = gaussian(link = "log"))) +
+  geom_text(data = FCF_summary %>% filter(Data == "E-fishing"),
+            aes(x = -Inf,
+                y = Inf,
+                color = Data,
+                label = paste0("FCF = ", FCF, " ± ", sd)),
+            hjust = -0.05, vjust = 1.3, inherit.aes = FALSE, show.legend = FALSE, size = 5) +
+  geom_text(data = FCF_summary %>% filter(Data == "Gut Lavage"),
+            aes(x = -Inf,
+                y = Inf,
+                color = Data,
+                label = paste0("FCF = ", FCF, " ± ", sd)),
+            hjust = -0.05, vjust = 3, inherit.aes = FALSE, show.legend = FALSE, size = 5) +
+  labs(x = "Fork Length (mm)",
+       y = "Fish Weight (g)",
+       color = "Data Type",
+       shape = "Data Type") +
+  theme_bw() +
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        strip.text = element_text(size = 10,
+                                  face = "bold"))
+ggsave("Figures/New_Figures/FCF_Comparison_V2.png", width = 10, height = 6, units = "in")
+
+# fork length faceted by data, colored by year, boxplot by species
+ggplot(combined_morphometric_df %>% filter(LifeStage == "YoY"), aes(x = SpeciesCode, y = ForkLength)) +
+  geom_boxplot(aes(color = as.factor(FieldSeason))) +
+  scale_x_discrete(labels = c("CH" = "Chinook", "CO" = "Coho", "SH" = "Steelhead")) +
+  facet_wrap(~Data) +
+  labs(x = "Species",
+       y = "Fork Length (mm)",
+       color = "Year")
+ggsave("Figures/New_Figures/FCF_Comp_Sample.png", width = 10, height = 8, units = "in")
+
+ggplot(combined_morphometric_df %>% filter(LifeStage == "YoY"), aes(x = SpeciesCode, y = FultonConditionFactor)) +
+  geom_boxplot(aes(color = as.factor(FieldSeason))) +
+  facet_wrap(~Data)
