@@ -205,6 +205,10 @@ summary(glm(FultonConditionFactor ~ SpeciesCode + RiverReach + FieldSeason,
             diet_data_original %>% filter(LifeStage == "YoY"),
             family = gaussian(link = "identity")))
 
+summary(glm(FultonConditionFactor ~ SpeciesCode + LifeStage + FieldSeason,
+            diet_data_original,
+            family = gaussian(link = "identity")))
+
 ## new zealand mud snail testing
 
 # choose only the stream sites where the NZMS was found for comparisons across SH in the same pools
@@ -222,6 +226,12 @@ diet_data_original %>%
                           Littorinimorpha > 0 ~ "Eaten")) %>%
   group_by(NZMS, StreamNumber, LifeStage) %>%
   summarize(mean(FultonConditionFactor), mean(ForkLength))
+
+### fork length
+
+summary(glm(ForkLength ~ SpeciesCode + LifeStage + FieldSeason,
+            diet_data_original,
+            family = gaussian(link = "identity")))
 
 ### stat testing across sample and population data
 combined_morphometric_df <- rbind(diet_data_original %>% 
