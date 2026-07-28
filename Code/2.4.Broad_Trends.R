@@ -125,9 +125,37 @@ diet_count_plot <- ggplot(diet_data_original %>%
 
 ### river mapping
 
-river_map <- rbind(unique(diet_data_original %>% select(Latitude, Longitude, RiverReach, StreamNumber)) %>% mutate(Data = "Diet"),
-      unique(fish_measurement %>% select(Latitude, Longitude, RiverReach, StreamNumber)) %>% mutate(Data = "Seining + efish"),
-      unique(fish_snorkel %>% select(Latitude, Longitude, RiverReach, StreamNumber)) %>% mutate(Data = "Snorkel"))
+river_map <- rbind(unique(diet_data_original %>%
+                            filter(LifeStage == "YoY") %>%
+                            select(Latitude, Longitude, RiverReach, StreamNumber, SpeciesCode)) %>% 
+                     group_by(SpeciesCode, RiverReach) %>%
+                     summarise(Count = n(),
+                               .groups = "drop") %>%
+                     group_by(RiverReach) %>%
+                     mutate(Proportion = Count / sum(Count),
+                            Data = "Gut Lavage"),
+                   fish_measurement %>% 
+                     filter(LifeStage == "YoY") %>%
+                     select(Latitude, Longitude, RiverReach, StreamNumber, SpeciesCode, NumberOfFish) %>% 
+                     group_by(SpeciesCode, RiverReach) %>%
+                     summarise(Count = sum(NumberOfFish),
+                               .groups = "drop") %>%
+                     group_by(RiverReach) %>%
+                     mutate(Proportion = Count / sum(Count),
+                            Data = "E-fishing"),
+                   fish_snorkel %>% 
+                     filter(LifeStage == "YoY") %>%
+                     select(Latitude, Longitude, RiverReach, StreamNumber, SpeciesCode, Count) %>% 
+                     group_by(SpeciesCode, RiverReach) %>%
+                     summarise(Count = sum(Count),
+                               .groups = "drop") %>%
+                     group_by(RiverReach) %>%
+                     mutate(Proportion = Count / sum(Count),
+                            Data = "Snorkel"))
+
+ggplot(river_map, aes(x = Data, y = Proportion, fill = SpeciesCode)) +
+  geom_col() +
+  facet_wrap(~RiverReach)
 
 ggplot(river_map %>% arrange(RiverReach, StreamNumber), aes(x = Longitude, y = Latitude)) +
   geom_path(aes(group = RiverReach, linetype = RiverReach), linewidth = 1) + 
@@ -135,6 +163,25 @@ ggplot(river_map %>% arrange(RiverReach, StreamNumber), aes(x = Longitude, y = L
 
 ggplot(river_map %>% arrange(RiverReach, StreamNumber), aes(x = Longitude, y = Latitude)) +
   geom_path(aes(group = RiverReach, linetype = RiverReach, color = RiverReach), linewidth = 1)
+
+combined_prop_df <- rbind(fish_snorkel %>%
+                            filter(LifeStage == "YoY") %>%
+                            group_by(SpeciesCode, FieldSeason) %>%
+                            summarise(Count = sum(Count, na.rm = TRUE),
+                                      .groups = "drop") %>%
+                            group_by(FieldSeason) %>%
+                            mutate(Proportion = Count / sum(Count),
+                                   Data = "Snorkel") %>%
+                            ungroup(),
+                          fish_measurement %>%
+                            filter(LifeStage == "YoY") %>%
+                            group_by(SpeciesCode, FieldSeason) %>%
+                            summarise(Count = sum(NumberOfFish, na.rm = TRUE),
+                                      .groups = "drop") %>%
+                            group_by(FieldSeason) %>%
+                            mutate(Proportion = Count / sum(Count),
+                                   Data = "E-fishing") %>%
+                            ungroup())
 
 ### snorkel survey
 
