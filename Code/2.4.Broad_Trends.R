@@ -222,6 +222,19 @@ ggplot(combined_prop_df, aes(x = as.factor(FieldSeason), y = Proportion, fill = 
   facet_wrap(~Data)
 ggsave("Figures/New_Figures/Proportion_Surveys.png", width = 8, height = 6, units = "in")
 
+### habitat type
+
+ggplot(diet_data_original %>% filter(LifeStage == "YoY"), aes(x = HabitatType, fill = SpeciesCode)) +
+  geom_bar(position = "fill") +
+  geom_text(aes(label = after_stat(count)),
+            stat = "count",
+            position = position_fill(vjust = 0.5)) +
+  scale_fill_discrete(labels = c("CH" = "Chinook", "CO" = "Coho", "SH" = "Steelhead")) +
+  labs(x = "Habitat Type",
+       y = "Percentage",
+       fill = "Species")
+ggsave("Figures/New_Figures/Species_Habitat_Distribution.png", height = 6, width = 8, units = "in")
+
 # Combining plots ---------------------------------------------------------
 
 ### fulton condition factor
