@@ -98,7 +98,7 @@ simple_model <- gllvm(diet_data_original_filtered[,21:37],
               family = "ZIP", num.lv = 3, sd.errors = FALSE, seed = 1234)
 
 par(mfrow = c(1,1))
-ordiplot(simple_model, biplot = TRUE,
+gllvm::ordiplot(simple_model, biplot = TRUE,
          main = "Ordination of ", symbols = TRUE, s.cex = 0.6, pch = pchSC, s.colors = ColorsSC)
 
 legend("topleft", legend = c("CH", "CO", "SH"), pch = c(1, 2, 3), col = c('red','green','purple'), bty = "n")
