@@ -125,37 +125,30 @@ diet_count_plot <- ggplot(diet_data_original %>%
 
 ### river mapping
 
-river_map <- rbind(unique(diet_data_original %>%
-                            filter(LifeStage == "YoY") %>%
-                            select(Latitude, Longitude, RiverReach, StreamNumber, SpeciesCode)) %>% 
-                     group_by(SpeciesCode, RiverReach) %>%
-                     summarise(Count = n(),
-                               .groups = "drop") %>%
-                     group_by(RiverReach) %>%
-                     mutate(Proportion = Count / sum(Count),
-                            Data = "Gut Lavage"),
+river_map <- rbind(diet_data_original %>%
+                     filter(LifeStage == "YoY") %>%
+                     select(Latitude, Longitude, RiverReach, StreamNumber, SpeciesCode, FieldSeason) %>% 
+                     mutate(Data = "Gut Lavage",
+                            Count = 1),
                    fish_measurement %>% 
                      filter(LifeStage == "YoY") %>%
-                     select(Latitude, Longitude, RiverReach, StreamNumber, SpeciesCode, NumberOfFish) %>% 
-                     group_by(SpeciesCode, RiverReach) %>%
-                     summarise(Count = sum(NumberOfFish),
-                               .groups = "drop") %>%
-                     group_by(RiverReach) %>%
-                     mutate(Proportion = Count / sum(Count),
-                            Data = "E-fishing"),
+                     select(Latitude, Longitude, RiverReach, StreamNumber, SpeciesCode, NumberOfFish, FieldSeason) %>% 
+                     mutate(Data = "E-fishing") %>%
+                     rename("Count" = "NumberOfFish"),
                    fish_snorkel %>% 
                      filter(LifeStage == "YoY") %>%
-                     select(Latitude, Longitude, RiverReach, StreamNumber, SpeciesCode, Count) %>% 
-                     group_by(SpeciesCode, RiverReach) %>%
-                     summarise(Count = sum(Count),
-                               .groups = "drop") %>%
-                     group_by(RiverReach) %>%
-                     mutate(Proportion = Count / sum(Count),
-                            Data = "Snorkel"))
+                     select(Latitude, Longitude, RiverReach, StreamNumber, SpeciesCode, Count, FieldSeason) %>% 
+                     mutate(Data = "Snorkel"))
 
-ggplot(river_map, aes(x = Data, y = Proportion, fill = SpeciesCode)) +
-  geom_col() +
-  facet_wrap(~RiverReach)
+ggplot(river_map, aes(x = Data, y = Count, fill = SpeciesCode)) +
+  stat_summary(fun = sum,
+               geom = "col",
+               position = "fill") +
+  stat_summary(aes(label = after_stat(y)),
+               fun = sum,
+               geom = "text",
+               position = position_fill(vjust = 0.5)) +
+  facet_wrap(FieldSeason~RiverReach) 
 
 ggplot(river_map %>% arrange(RiverReach, StreamNumber), aes(x = Longitude, y = Latitude)) +
   geom_path(aes(group = RiverReach, linetype = RiverReach), linewidth = 1) + 
