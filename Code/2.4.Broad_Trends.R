@@ -153,7 +153,8 @@ ggsave("Figures/New_Figures/River_Reach_Species_Distribution.png", width = 10, h
 
 ggplot(river_map %>% arrange(RiverReach, StreamNumber), aes(x = Longitude, y = Latitude)) +
   geom_path(aes(group = RiverReach, linetype = RiverReach), linewidth = 1) + 
-  geom_jitter(aes(shape = Data, color = Data), size = 2, width = 0.0005, height = 0.0005)
+  geom_jitter(aes(shape = Data, color = Data), size = 2, width = 0.0005, height = 0.0005) +
+  facet_wrap(~Data)
 
 ggplot(river_map %>% arrange(RiverReach, StreamNumber), aes(x = Longitude, y = Latitude)) +
   geom_path(aes(group = RiverReach, linetype = RiverReach, color = RiverReach), linewidth = 1)
