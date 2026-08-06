@@ -148,7 +148,8 @@ ggplot(river_map, aes(x = Data, y = Count, fill = SpeciesCode)) +
                fun = sum,
                geom = "text",
                position = position_fill(vjust = 0.5)) +
-  facet_wrap(FieldSeason~RiverReach) 
+  facet_wrap(~RiverReach) 
+ggsave("Figures/New_Figures/River_Reach_Species_Distribution.png", width = 10, height = 7, units = "in")
 
 ggplot(river_map %>% arrange(RiverReach, StreamNumber), aes(x = Longitude, y = Latitude)) +
   geom_path(aes(group = RiverReach, linetype = RiverReach), linewidth = 1) + 
