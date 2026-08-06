@@ -39,7 +39,8 @@ fish_snorkel <- snorkel_survey_data %>%
   # add river reach categorizations by stream number
   mutate(StreamNumber = as.numeric(StreamNumber),
          RiverReach = case_when(
-           StreamNumber >= 0 & StreamNumber <= 3.9 ~ "PacificWay",
+           StreamNumber >= 0 & StreamNumber < 1 ~ "Tidal Lagoon",
+           StreamNumber >= 1 & StreamNumber <= 3.9 ~ "PacificWay",
            StreamNumber >= 4 & StreamNumber <= 17.9 ~ "Highway1", 
            StreamNumber >= 18 & StreamNumber <= 28.9 ~ "FrankValley",
            StreamNumber >= 29 & StreamNumber <= 49.9 ~ "KentCreekTrail",
@@ -74,7 +75,8 @@ fish_measurement <- measurement_survey_data %>%
   # add river reach categorizations by stream number
   mutate(StreamNumber = as.numeric(StreamNumber),
     RiverReach = case_when(
-    StreamNumber >= 0 & StreamNumber <= 3.9 ~ "PacificWay",
+    StreamNumber >= 0 & StreamNumber < 1 ~ "Tidal Lagoon",
+    StreamNumber >= 1 & StreamNumber <= 3.9 ~ "PacificWay",
     StreamNumber >= 4 & StreamNumber <= 17.9 ~ "Highway1", 
     StreamNumber >= 18 & StreamNumber <= 28.9 ~ "FrankValley",
     StreamNumber >= 29 & StreamNumber <= 49.9 ~ "KentCreekTrail",
