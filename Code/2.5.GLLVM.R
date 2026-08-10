@@ -9,6 +9,7 @@ library(tidyverse)
 library(mvabund)
 library(grDevices)
 library(gllvm)
+library(forcats)
 
 # Calling files -----------------------------------------------------------
 
@@ -219,12 +220,36 @@ png("Figures/New_Figures/GLLVM_Coef_Plot.png", width = 9, height = 6, units = "i
 coefplot(test_model, cex.ylab = 0.7, mar = c(4, 9, 2, 1), mfrow=c(2,3), order = TRUE)
 dev.off()
 
-final_model <- gllvm((diet_data_original_filtered %>% filter(FieldSeason == 2022))[,21:37], diet_data_original_filtered %>% filter(FieldSeason == 2022) %>% select(SpeciesCode,FieldSeason,HabitatType,ForkLength), studyDesign = sDesign, 
-                       family = "ZIP", row.eff = ~(1|StreamNumber), num.lv = 3, 
+final_model <- gllvm((diet_data_original_filtered %>% filter(FieldSeason == 2022))[,21:37], diet_data_original_filtered %>% filter(FieldSeason == 2022) %>% select(SpeciesCode,FieldSeason,HabitatType,ForkLength), studyDesign = sDesign_2022, 
+                       family = "ZIP", row.eff = ~(1|StreamNumber), num.lv = 0, 
                        formula = ~ SpeciesCode + HabitatType + ForkLength,
                        seed = 1234)
 
 coefplot(final_model, cex.ylab = 0.7, mar = c(4, 9, 2, 1), mfrow=c(2,3), order = TRUE)
+
+
+sDesign_2022 <- data.frame(StreamNumber = as.factor((diet_data_original_filtered %>% filter(FieldSeason == 2022))$StreamNumber))
+
+final_model_V2 <- gllvm((diet_data_original_filtered %>% filter(FieldSeason == 2022))[,21:37], diet_data_original_filtered %>% filter(FieldSeason == 2022) %>% select(SpeciesCode,FieldSeason,HabitatType,ForkLength), studyDesign = sDesign_2022, 
+                     family = "ZINB", row.eff = ~(1|StreamNumber), num.lv = 0, 
+                     formula = ~ SpeciesCode + HabitatType + ForkLength,
+                     seed = 1234)
+
+coefplot(final_model_V2, cex.ylab = 0.7, mar = c(4, 9, 2, 1), mfrow=c(2,3), order = TRUE)
+
+final_model_all <- gllvm(diet_data_original_filtered[,21:37], diet_data_original_filtered %>% select(SpeciesCode,FieldSeason,HabitatType,ForkLength), studyDesign = sDesign, 
+                     family = "ZIP", row.eff = ~(1|StreamNumber), num.lv = 0, 
+                     formula = ~ SpeciesCode + HabitatType + ForkLength,
+                     seed = 1234)
+
+coefplot(final_model_all, cex.ylab = 0.7, mar = c(4, 9, 2, 1), mfrow=c(2,3), order = TRUE)
+
+final_model_all_V2 <- gllvm(diet_data_original_filtered[,21:37], diet_data_original_filtered %>% select(SpeciesCode,HabitatType,ForkLength, FieldSeason) %>% mutate(FieldSeason = as.factor(FieldSeason)), studyDesign = sDesign, 
+                        family = "ZINB", row.eff = ~(1|StreamNumber), num.lv = 0, 
+                        formula = ~ SpeciesCode + HabitatType + ForkLength + FieldSeason,
+                        seed = 1234)
+
+coefplot(final_model_all_V2, cex.ylab = 0.7, mar = c(4, 9, 2, 1), mfrow=c(2,3), order = TRUE)
 
 ZIP_cov_AIC_comparison <- NULL
 for(i in 1:5){
@@ -241,7 +266,38 @@ ZIP_cov_AIC_comparison
 
 VP(fl_model)
 VP(final_model)
+VP(final_model_all_V2)
 
+# Plot reworking ----------------------------------------------------------
+
+model_params <- rownames_to_column(data.frame(final_model_V2$params$Xcoef), "Taxa") %>%
+  pivot_longer(cols = 2:6, names_to = "Variable", values_to = "Coefficient_Estimate") %>%
+  left_join(diet_data_original_filtered[,21:37] %>% 
+              pivot_longer(cols = 1:17, names_to = "Taxa", values_to = "Count") %>%
+              group_by(Taxa) %>%
+              summarize(Count = sum(Count)),
+            by = "Taxa")
+
+ggplot(model_params %>% filter(Variable %in% c("SpeciesCodeCO", "SpeciesCodeSH")), aes(x = Coefficient_Estimate, y = Taxa, fill = Variable)) +
+  geom_col()
+
+ggplot(model_params %>% filter(Variable %in% c("HabitatTypeMid.Channel.Pool", "HabitatTypeScour.Pool")), aes(x = Coefficient_Estimate, y = Taxa, fill = Variable)) +
+  geom_col()
+
+count_labels <- model_params %>%
+  filter(Variable %in% c("SpeciesCodeCO", "SpeciesCodeSH")) %>%
+  group_by(Taxa) %>%
+  summarize(Count = first(Count), .groups = "drop")
+
+model_params %>%
+  group_by(Taxa) %>%
+  mutate(Taxa_Count = sum(Count)) %>%
+  filter(Variable %in% c("SpeciesCodeCO", "SpeciesCodeSH")) %>%
+  ggplot(aes(x = Coefficient_Estimate, y = forcats::fct_reorder(Taxa, Taxa_Count), fill = Variable)) +
+  geom_col(position = "identity", alpha = 0.7) +
+  geom_text(data = count_labels,
+            aes(x = 0, y = Taxa, label = Count),
+            inherit.aes = FALSE)
 # Exporting figures -------------------------------------------------------
 
 write.csv(Model_Testing_df,"Figures/New_Figures/Model_Testing.csv", row.names = FALSE)
