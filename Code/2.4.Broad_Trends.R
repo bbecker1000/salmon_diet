@@ -178,6 +178,55 @@ combined_prop_df <- rbind(fish_snorkel %>%
                                    Data = "E-fishing") %>%
                             ungroup())
 
+habitat_prop_df <- fish_snorkel %>%
+  filter(LifeStage == "YoY", FieldSeason == 2022) %>%
+  group_by(SpeciesCode, RiverReach) %>%
+  summarize(
+    Count = sum(Count, na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  group_by(RiverReach) %>%
+  mutate(
+    Total = sum(Count),
+    Proportion = Count / Total
+  ) %>%
+  ungroup() %>%
+  left_join(
+    river_map %>%
+      group_by(RiverReach) %>%
+      summarize(
+        Latitude = mean(Latitude, na.rm = TRUE),
+        Longitude = mean(Longitude, na.rm = TRUE),
+        .groups = "drop"
+      ),
+    by = "RiverReach"
+  )
+
+pie_df <- habitat_prop_df %>%
+  select(RiverReach, Latitude, Longitude, SpeciesCode, Proportion, Total) %>%
+  pivot_wider(
+    names_from = SpeciesCode,
+    values_from = Proportion,
+    values_fill = 0
+  ) %>%
+  mutate(
+    radius = sqrt(Total) / 10000
+  )
+
+ggplot() +
+  geom_path(data = river_map %>% arrange(RiverReach, StreamNumber), 
+            aes(x = Longitude, y = Latitude, group = RiverReach, linetype = RiverReach, color = RiverReach), linewidth = 1) +
+  geom_scatterpie(
+    data = pie_df,
+    aes(x = Longitude, y = Latitude, r = radius),
+    cols = c("CH", "CO", "SH"),
+    color = "black",
+    alpha = 0.9
+  ) +
+  coord_fixed() +
+  theme_bw() +
+  labs(x = "Longitude", y = "Latitude")
+
 ### snorkel survey
 
 combined_count_df <- rbind(fish_snorkel %>%
