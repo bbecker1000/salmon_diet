@@ -221,15 +221,54 @@ ggplot(snorkel_survey_data %>%
          filter(SpeciesCode %in% c("CH", "CO", "SH"),
                 LifeStage == "YoY") %>%
          group_by(FieldSeason, SpeciesCode) %>%
-         summarize(Total = sum(Count)) %>%
+         summarize(Total = sum(Count), .groups = "drop") %>%
+         group_by(FieldSeason) %>%
+         mutate(YearTotal = sum(Total)) %>%
+         ungroup() %>%
          mutate(Highlight = case_when(FieldSeason %in% c(2022,2025) ~ "Yes",
                                       .default = "No")), 
        aes(x = FieldSeason, y = Total, fill = SpeciesCode)) +
-  geom_col(aes(color = Highlight)) +
+  geom_col() +
   scale_color_manual(values = c("White","Black")) +
+  geom_text(data = plot_data %>% filter(SpeciesCode == "CH", Total > 0),
+            aes(x = FieldSeason, y = YearTotal,
+                label = paste0("Chinook: ", Total)),
+            inherit.aes = FALSE,
+            vjust = -0.5) + 
   labs(y = "Count",
        x = "Year") +
-  theme_bw()
+  theme_bw() +
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank())
+
+plot_data <- snorkel_survey_data %>%
+  filter(SpeciesCode %in% c("CH", "CO", "SH"),
+         LifeStage == "YoY") %>%
+  group_by(FieldSeason, SpeciesCode) %>%
+  summarize(Total = sum(Count), .groups = "drop") %>%
+  group_by(FieldSeason) %>%
+  mutate(YearTotal = sum(Total)) %>%
+  ungroup()
+
+ggplot(plot_data,
+       aes(x = FieldSeason, y = Total, fill = SpeciesCode)) +
+  geom_area() +
+  geom_point(data = plot_data %>% filter(SpeciesCode == "CH", Total > 0),
+             aes(x = FieldSeason, y = YearTotal),
+             inherit.aes = FALSE,
+             size = 4,
+             shape = 21,
+             fill = "#F8766D",
+             stroke = 1) +
+  geom_text(data = plot_data %>% filter(SpeciesCode == "CH", Total > 0),
+            aes(x = FieldSeason, y = YearTotal,
+                label = paste0("Chinook: ", Total)),
+            inherit.aes = FALSE,
+            vjust = -1) +
+  labs(x = "Year") +
+  theme_bw() +
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank())
 
 ### habitat type
 
