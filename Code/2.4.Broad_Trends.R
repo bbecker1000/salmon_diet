@@ -217,6 +217,20 @@ ggplot(combined_prop_df, aes(x = as.factor(FieldSeason), y = Proportion, fill = 
   facet_wrap(~Data)
 ggsave("Figures/New_Figures/Proportion_Surveys.png", width = 8, height = 6, units = "in")
 
+ggplot(snorkel_survey_data %>%
+         filter(SpeciesCode %in% c("CH", "CO", "SH"),
+                LifeStage == "YoY") %>%
+         group_by(FieldSeason, SpeciesCode) %>%
+         summarize(Total = sum(Count)) %>%
+         mutate(Highlight = case_when(FieldSeason %in% c(2022,2025) ~ "Yes",
+                                      .default = "No")), 
+       aes(x = FieldSeason, y = Total, fill = SpeciesCode)) +
+  geom_col(aes(color = Highlight)) +
+  scale_color_manual(values = c("White","Black")) +
+  labs(y = "Count",
+       x = "Year") +
+  theme_bw()
+
 ### habitat type
 
 ggplot(diet_data_original %>% filter(LifeStage == "YoY"), aes(x = HabitatType, fill = SpeciesCode)) +
