@@ -215,8 +215,6 @@ pie_df <- habitat_prop_df %>%
   )
 
 ggplot() +
-  geom_path(data = river_map %>% arrange(RiverReach, StreamNumber), 
-            aes(x = Longitude, y = Latitude, group = RiverReach, linetype = RiverReach, color = RiverReach), linewidth = 1) +
   geom_scatterpie(
     data = pie_df,
     aes(x = Longitude, y = Latitude, r = radius),
@@ -226,7 +224,13 @@ ggplot() +
   ) +
   coord_fixed() +
   theme_bw() +
-  labs(x = "Longitude", y = "Latitude")
+  labs(x = "Longitude", y = "Latitude") +
+  theme_bw() +
+  theme(panel.grid.minor = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.background = element_rect(fill = "transparent", color = NA),
+        plot.background = element_rect(fill = "transparent", color = NA))
+ggsave("Figures/New_Figures/River_Map_Distribution.png", width = 10, height = 10, units = "in", bg = "transparent")
 
 ### snorkel survey
 
