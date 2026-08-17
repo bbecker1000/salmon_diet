@@ -23,6 +23,7 @@ library(DHARMa)
 fish_snorkel <- read.csv("Data/Created_Data/Fish_Snorkel.csv")
 fish_measurement <- read.csv("Data/Created_Data/Fish_Measurement.csv")
 diet_data_original <- read.csv("Data/Created_Data/Diet_Data_Original.csv")
+snorkel_survey_data <- read.csv("Data/NPS_IMD_SFAN_Salmonids_SnorkelCountsDataset.csv")
 
 # Raw plotting ------------------------------------------------------------
 
@@ -266,59 +267,6 @@ ggplot(combined_prop_df, aes(x = as.factor(FieldSeason), y = Proportion, fill = 
   facet_wrap(~Data)
 ggsave("Figures/New_Figures/Proportion_Surveys.png", width = 8, height = 6, units = "in")
 
-ggplot(snorkel_survey_data %>%
-         filter(SpeciesCode %in% c("CH", "CO", "SH"),
-                LifeStage == "YoY") %>%
-         group_by(FieldSeason, SpeciesCode) %>%
-         summarize(Total = sum(Count), .groups = "drop") %>%
-         group_by(FieldSeason) %>%
-         mutate(YearTotal = sum(Total)) %>%
-         ungroup() %>%
-         mutate(Highlight = case_when(FieldSeason %in% c(2022,2025) ~ "Yes",
-                                      .default = "No")), 
-       aes(x = FieldSeason, y = Total, fill = SpeciesCode)) +
-  geom_col() +
-  scale_color_manual(values = c("White","Black")) +
-  geom_text(data = plot_data %>% filter(SpeciesCode == "CH", Total > 0),
-            aes(x = FieldSeason, y = YearTotal,
-                label = paste0("Chinook: ", Total)),
-            inherit.aes = FALSE,
-            vjust = -0.5) + 
-  labs(y = "Count",
-       x = "Year") +
-  theme_bw() +
-  theme(panel.grid.major = element_blank(),
-        panel.grid.minor = element_blank())
-
-plot_data <- snorkel_survey_data %>%
-  filter(SpeciesCode %in% c("CH", "CO", "SH"),
-         LifeStage == "YoY") %>%
-  group_by(FieldSeason, SpeciesCode) %>%
-  summarize(Total = sum(Count), .groups = "drop") %>%
-  group_by(FieldSeason) %>%
-  mutate(YearTotal = sum(Total)) %>%
-  ungroup()
-
-ggplot(plot_data,
-       aes(x = FieldSeason, y = Total, fill = SpeciesCode)) +
-  geom_area() +
-  geom_point(data = plot_data %>% filter(SpeciesCode == "CH", Total > 0),
-             aes(x = FieldSeason, y = YearTotal),
-             inherit.aes = FALSE,
-             size = 4,
-             shape = 21,
-             fill = "#F8766D",
-             stroke = 1) +
-  geom_text(data = plot_data %>% filter(SpeciesCode == "CH", Total > 0),
-            aes(x = FieldSeason, y = YearTotal,
-                label = paste0("Chinook: ", Total)),
-            inherit.aes = FALSE,
-            vjust = -1) +
-  labs(x = "Year") +
-  theme_bw() +
-  theme(panel.grid.major = element_blank(),
-        panel.grid.minor = element_blank())
-
 ### habitat type
 
 ggplot(diet_data_original %>% filter(LifeStage == "YoY"), aes(x = HabitatType, fill = SpeciesCode)) +
@@ -424,6 +372,60 @@ sim_res <- simulateResiduals(fittedModel = qq, n = 250)
 plot(sim_res)
 
 # Finalized plots ---------------------------------------------------------
+
+### salmonid population trend over time
+
+# create population trend data set
+pop_trend_data <- snorkel_survey_data %>%
+  # follows same filter procedures as fish_survey, include all years
+  mutate(Date = as.Date(StartDate),
+         LifeStage = case_match(LifeStage,
+                                "yoy" ~ "YoY",
+                                .default = LifeStage)) %>%
+  filter(SpeciesCode %in% c("CH", "CO", "SH"),
+         LifeStage == "YoY",
+         month(Date) == 7 | month(Date) == 8,
+         Watershed == "Redwood Creek", 
+         StreamName != "Fern Creek") %>%
+  # calculate total counts by year and species
+  group_by(FieldSeason, SpeciesCode) %>%
+  summarize(Total = sum(Count), .groups = "drop") %>%
+  # calculate total year counts for plotting purposes
+  group_by(FieldSeason) %>%
+  mutate(YearTotal = sum(Total)) %>%
+  ungroup()
+
+# population trend graph
+# exclude chinook from area graphic for aesthetic purposes (minimal value doesn't affect communication)
+ggplot(pop_trend_data %>% filter(SpeciesCode != "CH"), aes(x = FieldSeason, y = Total, fill = SpeciesCode)) +
+  # create gut lavage year vertical line indicators (first to underly graph)
+  geom_segment(x = 2020, y = 10, yend = Inf, linetype = "dashed") +
+  geom_segment(x = 2022, y = 10, yend = Inf, linetype = "dashed") +
+  # create primary stacked and filled line graphic
+  geom_area() +
+  # add point indicators for chinook years
+  geom_point(data = pop_trend_data %>% filter(SpeciesCode == "CH", Total > 0), aes(x = FieldSeason, y = YearTotal),
+             inherit.aes = FALSE, size = 4, shape = 21, fill = "#F8766D", stroke = 1) +
+  # add count labels for chinook point indicators
+  geom_label(data = pop_trend_data %>% filter(SpeciesCode == "CH", Total > 0), aes(x = FieldSeason, y = YearTotal, label = paste0("Chinook: ", Total)),
+             inherit.aes = FALSE, vjust = -1, fill = "white",
+             fontface = "bold", color = "#F8766D", label.size = 0) +
+  # ylim to fit chinook label
+  ylim(0,8000) +
+  # choose specific x-axis tick labels
+  scale_x_continuous(breaks = sort(unique(c(2000,2005,2010,2015,2020,2022,2025)))) +
+  # label species (fill) legend
+  scale_fill_discrete(labels = c("Coho", "Steelhead"),
+                      type = c("#00BA38","#619CFF")) +
+  labs(x = "Year", y = "Count", fill = NULL) +
+  theme_bw() +
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        legend.position = "bottom") +
+  guides(fill = guide_legend(nrow = 1))
+ggsave("Figures/New_Figures/Salmonid_Population_x_Time.png", width = 12, height = 6, units = "in")
+
+### FCF
 
 FCF_summary <- combined_morphometric_df %>% 
   group_by(SpeciesCode, Data) %>% 
