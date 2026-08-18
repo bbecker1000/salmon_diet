@@ -10,6 +10,7 @@ library(mvabund)
 library(grDevices)
 library(gllvm)
 library(forcats)
+library(DHARMa)
 
 # Calling files -----------------------------------------------------------
 
@@ -79,6 +80,17 @@ Model_Testing_df <- data.frame(Latent_Variables = c(1,2,3,4,5),
            Negative_Binomial = negative_binomial_AIC_comparison,
            Zero_Inflated_Negative_Binomial = ZINB_AIC_comparison,
            Zero_Inflated_Poisson = ZIP_AIC_comparison)
+
+
+# dispersion check --------------------------------------------------------
+
+dispersion_index <- diet_data_original %>%
+  pivot_longer(cols = 21:37, names_to = "Taxa", values_to = "Count") %>%
+  group_by(Taxa) %>%
+  summarize(var = var(Count), mean = mean(Count), Dispersion_Index = var/mean)
+
+plot(log(dispersion_index$mean), log(dispersion_index$var))
+abline(a = 2.17, b = 1.5, lty = 2)
 
 # ordination plot ---------------------------------------------------------
 
@@ -220,6 +232,11 @@ png("Figures/New_Figures/GLLVM_Coef_Plot.png", width = 9, height = 6, units = "i
 coefplot(test_model, cex.ylab = 0.7, mar = c(4, 9, 2, 1), mfrow=c(2,3), order = TRUE)
 dev.off()
 
+final_model_V0 <- gllvm((diet_data_original_filtered %>% filter(FieldSeason == 2022))[,21:37], diet_data_original_filtered %>% filter(FieldSeason == 2022) %>% select(SpeciesCode,FieldSeason,HabitatType,ForkLength), studyDesign = sDesign_2022, 
+                     family = "poisson", row.eff = ~(1|StreamNumber), num.lv = 0, 
+                     formula = ~ SpeciesCode + HabitatType + ForkLength,
+                     seed = 1234)
+
 final_model <- gllvm((diet_data_original_filtered %>% filter(FieldSeason == 2022))[,21:37], diet_data_original_filtered %>% filter(FieldSeason == 2022) %>% select(SpeciesCode,FieldSeason,HabitatType,ForkLength), studyDesign = sDesign_2022, 
                        family = "ZIP", row.eff = ~(1|StreamNumber), num.lv = 0, 
                        formula = ~ SpeciesCode + HabitatType + ForkLength,
@@ -235,7 +252,17 @@ final_model_V2 <- gllvm((diet_data_original_filtered %>% filter(FieldSeason == 2
                      formula = ~ SpeciesCode + HabitatType + ForkLength,
                      seed = 1234)
 
-coefplot(final_model_V2, cex.ylab = 0.7, mar = c(4, 9, 2, 1), mfrow=c(2,3), order = TRUE)
+final_model_V3 <- gllvm((diet_data_original_filtered %>% filter(FieldSeason == 2022))[,21:37], diet_data_original_filtered %>% filter(FieldSeason == 2022) %>% select(SpeciesCode,FieldSeason,HabitatType,ForkLength), studyDesign = sDesign_2022, 
+                        family = "negative.binomial", row.eff = ~(1|StreamNumber), num.lv = 0, 
+                        formula = ~ SpeciesCode + HabitatType + ForkLength,
+                        seed = 1234)
+
+final_model_V4 <- gllvm((diet_data_original_filtered %>% filter(FieldSeason == 2022))[,21:37], diet_data_original_filtered %>% filter(FieldSeason == 2022) %>% select(SpeciesCode,FieldSeason,HabitatType,ForkLength), studyDesign = sDesign_2022, 
+                        family = "negative.binomial1", row.eff = ~(1|StreamNumber), num.lv = 0, 
+                        formula = ~ SpeciesCode + HabitatType + ForkLength,
+                        seed = 1234)
+
+coefplot(final_model_V3, cex.ylab = 0.7, mar = c(4, 9, 2, 1), mfrow=c(2,3), order = TRUE)
 
 final_model_all <- gllvm(diet_data_original_filtered[,21:37], diet_data_original_filtered %>% select(SpeciesCode,FieldSeason,HabitatType,ForkLength), studyDesign = sDesign, 
                      family = "ZIP", row.eff = ~(1|StreamNumber), num.lv = 0, 
@@ -270,7 +297,7 @@ VP(final_model_all_V2)
 
 # Plot reworking ----------------------------------------------------------
 
-model_params <- rownames_to_column(data.frame(final_model_V2$params$Xcoef), "Taxa") %>%
+model_params <- rownames_to_column(data.frame(final_model_V3$params$Xcoef), "Taxa") %>%
   pivot_longer(cols = 2:6, names_to = "Variable", values_to = "Coefficient_Estimate") %>%
   left_join(diet_data_original_filtered[,21:37] %>% 
               pivot_longer(cols = 1:17, names_to = "Taxa", values_to = "Count") %>%
