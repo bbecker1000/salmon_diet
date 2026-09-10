@@ -17,6 +17,7 @@ library(tidyverse)
 library(patchwork)
 library(glmmTMB)
 library(DHARMa)
+library(scatterpie)
 
 # Calling files -----------------------------------------------------------
 
@@ -377,12 +378,34 @@ combined_morphometric_df %>%
             combined_morphometric_df,
             family = gaussian(link = "identity")))
 
-qq <- glmmTMB(FultonConditionFactor ~ FieldSeason + LifeStage + SpeciesCode + Data,
-       combined_morphometric_df,
+data_method_comparison <- glmmTMB(FultonConditionFactor ~ FieldSeason + LifeStage + SpeciesCode + Data,
+       combined_morphometric_df %>% 
+         filter(ForkLength > 50) %>%
+         mutate(FieldSeason = as.factor(FieldSeason),
+                FieldSeason = relevel(factor(FieldSeason), ref = "2022"),
+                LifeStage = relevel(factor(LifeStage), ref = "YoY"),
+                Data = relevel(factor(Data), ref = "Gut Lavage")),
        family = t_family(link = "identity"))
+
+data_method_comparison_FL <- glmmTMB(ForkLength ~ FieldSeason + LifeStage + SpeciesCode + Data,
+                                  combined_morphometric_df %>% 
+                                    filter(ForkLength > 50) %>%
+                                    mutate(FieldSeason = as.factor(FieldSeason),
+                                           FieldSeason = relevel(factor(FieldSeason), ref = "2022"),
+                                           LifeStage = relevel(factor(LifeStage), ref = "YoY"),
+                                           Data = relevel(factor(Data), ref = "Gut Lavage")),
+                                  family = t_family(link = "identity"))
 
 sim_res <- simulateResiduals(fittedModel = qq, n = 250)
 plot(sim_res)
+
+year_comparison <- glmmTMB(ForkLength ~ FieldSeason + LifeStage + SpeciesCode,
+              combined_morphometric_df %>% 
+                filter(Data == "Gut Lavage") %>%
+                mutate(FieldSeason = as.factor(FieldSeason),
+                       FieldSeason = relevel(factor(FieldSeason), ref = "2022"),
+                       LifeStage = relevel(factor(LifeStage), ref = "YoY")),
+              family = t_family(link = "identity"))
 
 # Finalized plots ---------------------------------------------------------
 
@@ -438,16 +461,54 @@ ggplot(pop_trend_data %>% filter(SpeciesCode != "CH"), aes(x = FieldSeason, y = 
   guides(fill = guide_legend(nrow = 1))
 ggsave("Figures/New_Figures/Salmonid_Population_x_Time.png", width = 12, height = 6, units = "in")
 
+## redo pop. trend with only first pass and density estimates
+
+snorkel_survey_summary <- snorkel_survey_data %>%
+  mutate(Date = as.Date(StartDate),
+         LifeStage = case_match(LifeStage,
+                                "yoy" ~ "YoY",
+                                .default = LifeStage)) %>%
+  filter(SpeciesCode %in% c("CH", "CO", "SH"),
+         LifeStage == "YoY",
+         Watershed == "Redwood Creek", 
+         StreamName != "Fern Creek",
+         Pass == 1,
+         DataProcessingLevel == "Accepted") %>%
+  group_by(FieldSeason, SpeciesCode) %>%
+  summarize(Total = sum(Count, na.rm = TRUE),
+            .groups = "drop") %>%
+  group_by(FieldSeason) %>%
+  mutate(YearTotal = sum(Total),
+         Proportion = Total / YearTotal,
+         Percent = 100 * Total / YearTotal) %>%
+  ungroup()
+
+ggplot(snorkel_survey_summary, aes(x = FieldSeason, y = Proportion, fill = SpeciesCode)) +
+  geom_col() +
+  # Outline entire stacked bars for 2020 and 2022
+  geom_col(data = snorkel_survey_summary %>%
+             filter(FieldSeason %in% c(2020, 2022)) %>%
+             group_by(FieldSeason) %>%
+             summarize(Proportion = sum(Proportion), .groups = "drop"),
+           aes(x = FieldSeason, y = Proportion), inherit.aes = FALSE, fill = NA,
+           color = "black", linewidth = 2, width = 1) +
+  labs(x = "Year", y = "% Population", fill = "Species") +
+  scale_fill_discrete(labels = c("CH" = "Chinook", "CO" = "Coho", "SH" = "Steelhead")) +
+  theme_bw() +
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank())
+
 ### FCF
 
 FCF_summary <- combined_morphometric_df %>% 
   group_by(SpeciesCode, Data) %>% 
+  filter(LifeStage == "YoY", ForkLength > 50) %>%
   summarize(FCF = format(round(mean(FultonConditionFactor, na.rm = TRUE), 2), nsmall = 2),
             sd = format(round(sd(FultonConditionFactor, na.rm = TRUE), 2), nsmall = 2),
             .groups = 'drop')
 
 # fork length vs. fish weight colored by data, faceted by species w/ FCF text
-ggplot(combined_morphometric_df %>% filter(LifeStage == "YoY"), 
+ggplot(combined_morphometric_df %>% filter(LifeStage == "YoY", ForkLength > 50), 
        aes(x = ForkLength, y = FishWeight, color = Data, shape = Data)) +
   geom_point(alpha = 0.5) +
   facet_wrap(~SpeciesCode, 
