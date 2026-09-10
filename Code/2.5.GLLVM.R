@@ -21,8 +21,10 @@ diet_data_original_traits <- read_csv("Data/Created_Data/Diet_Taxa_Original_Trai
 # Modifying dataframe -----------------------------------------------------
 
 # remove empty stomach  (zero rows)
-diet_data_original_filtered <- diet_data_original[rowSums(diet_data_original[,21:37]) > 0,] %>% 
-  filter(LifeStage == "YoY") %>% 
+diet_data_original_filtered <- cbind(diet_data_original[,1:20],diet_data_original[,21:37][,colSums(diet_data_original[,21:37]) > 10]) %>%
+  filter(LifeStage == "YoY")
+
+diet_data_original_filtered <- diet_data_original_filtered[rowSums(diet_data_original_filtered[,21:36]) > 0,] %>% 
   mutate(FieldSeason = as.character(FieldSeason),
          StreamNumber = as.character(StreamNumber)) %>%
   na.omit()
@@ -52,7 +54,7 @@ poisson_AIC_comparison
 # Test from 1 - 5 latent variables for negative binomial family
 negative_binomial_AIC_comparison <- NULL
 for(i in 1:5){
-  fiti <- gllvm(diet_data_original[,21:37] %>% filter(rowSums(across(where(is.numeric))) != 0),
+  fiti <- gllvm(diet_data_original_filtered[,21:37] %>% filter(rowSums(across(where(is.numeric))) != 0),
                 family = "negative.binomial", num.lv = i, sd.errors = FALSE, seed = 1234)
   negative_binomial_AIC_comparison[i] <- summary(fiti)$AICc
   names(negative_binomial_AIC_comparison)[i] = i
@@ -208,6 +210,58 @@ ordiplot(simple_model_2, biplot = FALSE,
          symbols = TRUE, s.cex = 0.6, pch = pchSC, s.colors = ColorsFL)
 legend("topleft", legend = c("Small", "Large"), pch = 1, col = c('red','green'), bty = "n")
 
+### NB
+
+simple_model_3 <- gllvm(diet_data_original_filtered[,21:36], 
+                        family = "negative.binomial", num.lv = 1, sd.errors = FALSE, seed = 1234)
+
+ordiplot(simple_model_3, biplot = TRUE,
+         main = "Latent Variable Biplot by Species",
+         symbols = TRUE, s.cex = 1, pch = pchSC, s.colors = ColorsSC)
+legend("topleft", legend = c("CH", "CO", "SH"), pch = c(1, 2, 3), col = c('red','green','purple'), bty = "n")
+
+lv_scores <- data.frame(LV1 = simple_model_3$lvs[, 1],
+                        SpeciesCode = diet_data_original_filtered$SpeciesCode)
+
+taxa_scores <- data.frame(LV1 = simple_model_3$params$beta0) %>%
+  rownames_to_column(var = "Taxa")
+
+p1 <- ggplot() +
+  geom_boxplot(data = lv_scores, aes(x = LV1, y = SpeciesCode, color = SpeciesCode)) +
+  labs(x = "Latent Variable 1", color = "Species") +
+  scale_color_discrete(labels = c("CH" = "Chinook", "CO" = "Coho", "SH" = "Steelhead")) +
+  guides(color = guide_legend(reverse = TRUE)) +
+  xlim(-3,2) +
+  theme_bw() +
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        axis.title.y = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks.y = element_blank(),
+        axis.title.x = element_blank(),
+        axis.text.x = element_blank(),
+        axis.ticks.x = element_blank());p1
+
+p2 <- ggplot() +
+  geom_point(data = lv_scores, aes(x = LV1, y = 0, color = SpeciesCode), alpha = 0.5) +
+  geom_text_repel(data = taxa_scores, aes(x = LV1, y = 0, label = Taxa), 
+                  angle = 60, size = 3, direction = "x",   # move labels horizontally only
+                  nudge_x = 0.05, segment.color = NA,
+                  fontface = "bold") +
+  labs(x = "Latent Variable 1") +
+  xlim(-3, 2) +
+  theme_bw() +
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        axis.title.y = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks.y = element_blank(),
+        legend.position = "none");p2
+
+p1 + p2 +
+  plot_layout(heights = c(4, 1))
+ggsave("Figures/New_Figures/Latent_Variable_Plot.png", width = 10, height = 8, units = "in")
+
 # Test and compare zero latent variable and zero covariate models ---------
 
 diet_data_original_filtered <- diet_data_original_filtered %>%
@@ -298,6 +352,16 @@ final_model_all_V4 <- gllvm(diet_data_original_filtered[,21:37], diet_data_origi
                             formula = ~ SpeciesCode + HabitatType + ForkLength + FieldSeason,
                             seed = 1234)
 
+final_model_all_V5 <- gllvm(diet_data_original_filtered[,21:37], diet_data_original_filtered %>% select(SpeciesCode,HabitatType,ForkLength, FieldSeason) %>% mutate(FieldSeason = as.factor(FieldSeason)), studyDesign = sDesign, 
+                            family = "negative.binomial", row.eff = ~(1|StreamNumber), num.lv = 0, 
+                            formula = ~ SpeciesCode + HabitatType + ForkLength + FieldSeason + 0,
+                            seed = 1234)
+
+final_model_all_V6 <- gllvm(diet_data_original_filtered[,21:37], diet_data_original_filtered %>% select(SpeciesCode,HabitatType,ForkLength, FieldSeason) %>% mutate(FieldSeason = as.factor(FieldSeason)),
+                            family = "negative.binomial", num.lv = 0, 
+                            formula = ~ SpeciesCode + HabitatType + ForkLength + FieldSeason,
+                            seed = 1234)
+
 ZIP_cov_AIC_comparison <- NULL
 for(i in 1:5){
   fiti <- gllvm(diet_data_original_filtered[,21:37], diet_data_original_filtered[, 1:20] %>% select(SpeciesCode,FieldSeason,HabitatType), studyDesign = sDesign, 
@@ -323,7 +387,7 @@ coef_plot_df <- rownames_to_column(data.frame(final_model_all_V3$params$Xcoef), 
   rename(CO = SpeciesCodeCO, SH = SpeciesCodeSH) %>%
   pivot_longer(cols = 2:3, names_to = "SpeciesCode", values_to = "Coefficient_Estimate") %>%
   # add sd
-  left_join(rownames_to_column(data.frame(final_model_V3$sd$Xcoef), var = "Taxa") %>%
+  left_join(rownames_to_column(data.frame(final_model_all_V3$sd$Xcoef), var = "Taxa") %>%
               select(Taxa, SpeciesCodeCO, SpeciesCodeSH) %>%
               rename(CO = SpeciesCodeCO, SH = SpeciesCodeSH) %>%
               pivot_longer(cols = 2:3,
@@ -350,13 +414,69 @@ count_labels <- coef_plot_df %>%
 
 ##
 
+fit_df <- 'colnames<-'((as.data.frame(predict(final_model_all_V3, 
+                                              type = "response"))), 
+                       dimnames(final_model_all_V3$y)[[2]]) %>%
+  mutate(RowID = row_number()) %>%
+  pivot_longer(cols = 1:17, names_to = "Taxa", values_to = "Fit")
+
+upper_df <- 'colnames<-'((as.data.frame((predict(final_model_all_V3, 
+                                                type = "response",
+                                                se.fit = TRUE))$upper)), 
+                         dimnames(final_model_all_V3$y)[[2]]) %>%
+  mutate(RowID = row_number()) %>%
+  pivot_longer(cols = 1:17, names_to = "Taxa", values_to = "Upper")
+upper_df$Upper[is.infinite(upper_df$Upper)] <- 10**10
+
+lower_df <- 'colnames<-'((as.data.frame((predict(final_model_all_V3, 
+                                                 type = "response",
+                                                 se.fit = TRUE))$lower)), 
+                         dimnames(final_model_all_V3$y)[[2]]) %>%
+  mutate(RowID = row_number()) %>%
+  pivot_longer(cols = 1:17, names_to = "Taxa", values_to = "Lower")
+
+fit_df %>%
+  left_join(upper_df, by = c("RowID", "Taxa")) %>%
+  left_join(lower_df, by = c("RowID", "Taxa"))
+
+model_summary <- diet_data_original_filtered[,1:20] %>%
+  mutate(RowID = row_number()) %>%
+  select(RowID, SpeciesCode) %>%
+  left_join(fit_df, by = c("RowID")) %>%
+  left_join(upper_df, by = c("RowID", "Taxa")) %>%
+  left_join(lower_df, by = c("RowID", "Taxa")) %>%
+  left_join(data.frame(final_model_all_V3$y) %>%
+              mutate(RowID = row_number()) %>%
+              pivot_longer(cols = 1:17, names_to = "Taxa", values_to = "Obs"),
+            by = c("RowID", "Taxa")) %>%
+  group_by(SpeciesCode, Taxa) %>%
+  summarize(Fit = mean(Fit), Upper = mean(Upper), Lower = mean(Lower), Obs = mean(Obs)) %>%
+  left_join(coef_plot_df %>% select(Taxa, Count),
+            by = "Taxa")
+
+raw_data_df <- data.frame(final_model_all_V3$y) %>%
+  mutate(RowID = row_number()) %>%
+  pivot_longer(cols = 1:17, names_to = "Taxa", values_to = "Obs") %>%
+  right_join(diet_data_original_filtered[,1:20] %>% mutate(RowID = row_number()) %>% select(RowID, SpeciesCode),
+             by = c("RowID"))
+
+ggplot(model_summary, aes(y = forcats::fct_reorder(Taxa, Count))) +
+  geom_point(aes(x = Fit, color = SpeciesCode),
+             position = position_dodge(width = 1)) +
+  geom_linerange(aes(xmin = Lower, xmax = Upper, color = SpeciesCode),
+                 position = position_dodge(width = 1)) +
+  geom_boxplot(data = raw_data_df, aes(x = Obs, y = Taxa, color = SpeciesCode)) +
+  coord_cartesian(xlim = c(0,5))
+
+##
+
 model_count_pred <- diet_data_original_filtered[,1:20] %>%
   mutate(RowID = row_number()) %>%
   select(RowID, SpeciesCode) %>%
   left_join(data.frame(final_model_all_V3$y) %>%
               mutate(RowID = row_number()) %>%
               pivot_longer(cols = 1:17, names_to = "Taxa", values_to = "Obs") %>%
-              left_join('colnames<-'((as.data.frame(predict(final_model_all_V3, type = "response"))), dimnames(obs)[[2]]) %>%
+              left_join('colnames<-'((as.data.frame(predict(final_model_all_V3, type = "response"))), dimnames(final_model_all_V3$y)[[2]]) %>%
                           mutate(RowID = row_number()) %>%
                           pivot_longer(cols = 1:17, names_to = "Taxa", values_to = "Pred"), 
                         by = c("RowID", "Taxa")), 
@@ -418,7 +538,46 @@ p1 + p2 +
   plot_layout(widths = c(4, 1))
 ggsave("Figures/New_Figures/Coefficient_Plot.png", width = 10, height = 8, units = "in")
 
+##
+
+coef_plot_V2_df <- rownames_to_column(data.frame(final_model_all_V5$params$Xcoef), var = "Taxa") %>%
+  select(Taxa, SpeciesCodeCO, SpeciesCodeSH, SpeciesCodeCH) %>%
+  rename(CO = SpeciesCodeCO, SH = SpeciesCodeSH, CH = SpeciesCodeCH) %>%
+  pivot_longer(cols = 2:4, names_to = "SpeciesCode", values_to = "Coefficient_Estimate") %>%
+  # add sd
+  left_join(rownames_to_column(data.frame(final_model_all_V5$sd$Xcoef), var = "Taxa") %>%
+              select(Taxa, SpeciesCodeCO, SpeciesCodeSH, SpeciesCodeCH) %>%
+              rename(CO = SpeciesCodeCO, SH = SpeciesCodeSH, CH = SpeciesCodeCH) %>%
+              pivot_longer(cols = 2:4,
+                           names_to = "SpeciesCode",
+                           values_to = "SE"),
+            by = c("Taxa", "SpeciesCode")) %>%
+  # Wald test: z_value = coef/SE, p-value = 2 * pnorm w/ alpha = 0.05
+  mutate(Significant = if_else(2 * pnorm(abs(Coefficient_Estimate / SE), 
+                                         lower.tail = FALSE) < 0.05, 
+                               "Yes", 
+                               "No")) %>%
+  left_join(diet_data_original_filtered[,21:37] %>% 
+              pivot_longer(cols = 1:17, names_to = "Taxa", values_to = "Count") %>%
+              group_by(Taxa) %>%
+              summarize(Count = sum(Count)), by = "Taxa") %>%
+  mutate(Lower = Coefficient_Estimate - 1.96 * SE,
+         Upper = Coefficient_Estimate + 1.96 * SE)
+
+ggplot(coef_plot_V2_df, aes(y = forcats::fct_reorder(Taxa, Count))) +
+  geom_point(aes(x = exp(Coefficient_Estimate), color = SpeciesCode, shape = Significant, size = Significant),
+             position = position_dodge(width = 1)) +
+  geom_linerange(aes(xmin = exp(Lower), xmax = exp(Upper), color = SpeciesCode, alpha = Significant, linewidth = Significant),
+                 position = position_dodge(width = 1)) +
+  coord_cartesian(xlim = c(0,5)) +
+  scale_shape_manual(values = c("No" = 1, "Yes" = 16)) +
+  scale_alpha_manual(values = c("Yes" = 1, "No" = 0.3), guide = "none") +
+  scale_linewidth_manual(values = c("Yes" = 0.75, "No" = 0.75)) +
+  scale_size_manual(values = c("Yes" = 2.5, "No" = 2.5))
+  geom_vline(xintercept = 1, linetype = "dashed", color = "#2E9B57")
+
 ###
+
 
 ggplot(model_params %>% filter(Variable %in% c("SpeciesCodeCO", "SpeciesCodeSH")), aes(x = Coefficient_Estimate, y = Taxa, fill = Variable)) +
   geom_col()
